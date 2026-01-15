@@ -1,0 +1,7 @@
+{
+  "name": "cricket-platform-mobile-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
