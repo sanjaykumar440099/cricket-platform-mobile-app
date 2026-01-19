@@ -1,0 +1,55 @@
+:host { display: block; }
+
+.bg-dark {
+  --ion-background-color: #0b0e14;
+  background: linear-gradient(180deg, #0b0e14 0%, #0f1720 100%);
+  color: #e6eef8;
+  min-height: 100%;
+}
+
+.toolbar-dark {
+  --background: transparent;
+  color: #e6eef8;
+}
+
+.match-card {
+  margin: 18px;
+  padding: 18px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(2,6,23,0.7);
+  backdrop-filter: blur(6px);
+}
+
+.teams-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.team { display:flex; align-items:center; }
+.logo{
+  width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,#1f2937,#111827); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; margin-right:12px; box-shadow:0 4px 12px rgba(0,0,0,0.6);
+}
+.info .name{ font-size:14px; color:#cfe6ff; font-weight:600 }
+.info .score{ font-size:16px; color:#fff; font-weight:800 }
+.vs{ color:#98a8bf; font-weight:700 }
+
+.match-meta{ display:flex; justify-content:space-between; margin-top:12px; color:#9fb0c8 }
+
+.progress{ margin-top:14px }
+.bar{ height:8px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden }
+.fill{ height:100%; background:linear-gradient(90deg,#10b981,#06b6d4) }
+.progress-label{ margin-top:6px; color:#8da7bf; font-size:12px }
+
+.players{ display:flex; gap:12px; margin-top:16px }
+.player{ display:flex; align-items:center; background:rgba(255,255,255,0.02); padding:8px 10px; border-radius:10px }
+.avatar{ width:44px;height:44px;border-radius:50%;background:#0b1220;color:#fff;display:flex;align-items:center;justify-content:center;margin-right:8px }
+.pname{ font-weight:600; color:#dbefff }
+.pstat{ font-size:12px; color:#93b1cf }
+
+.actions{ display:flex; justify-content:space-between; margin-top:18px }
+
+@media (min-width:720px){
+  .match-card{ margin:26px auto; max-width:720px }
+}

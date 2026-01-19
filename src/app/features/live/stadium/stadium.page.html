@@ -1,0 +1,62 @@
+<ion-header translucent>
+  <ion-toolbar class="toolbar-dark">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Stadium</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear">
+        <ion-icon name="share-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen class="bg-dark">
+  <div class="match-card">
+    <div class="teams-row">
+      <div class="team">
+        <div class="logo">H</div>
+        <div class="info">
+          <div class="name">{{ home.name }}</div>
+          <div class="score">{{ home.score }}</div>
+        </div>
+      </div>
+
+      <div class="vs">VS</div>
+
+      <div class="team">
+        <div class="logo">A</div>
+        <div class="info">
+          <div class="name">{{ away.name }}</div>
+          <div class="score">{{ away.score }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="match-meta">
+      <div class="status">{{ status }}</div>
+      <div class="venue">{{ venue }}</div>
+    </div>
+
+    <div class="progress">
+      <div class="bar"><div class="fill" style="width:60%"></div></div>
+      <div class="progress-label">Powerplay • 12/20 overs</div>
+    </div>
+
+    <div class="players">
+      <div class="player" *ngFor="let p of highlights">
+        <div class="avatar">{{ p.name.charAt(0) }}</div>
+        <div class="pinfo">
+          <div class="pname">{{ p.name }}</div>
+          <div class="pstat">{{ p.stat }} runs</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <ion-button color="light" fill="clear">Scorecard</ion-button>
+      <ion-button color="primary">Follow</ion-button>
+    </div>
+  </div>
+</ion-content>
