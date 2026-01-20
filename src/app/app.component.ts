@@ -9,6 +9,6 @@ import { AuthService } from './core/auth/auth.service';
 })
 export class AppComponent {
   constructor(private auth: AuthService) {
-    this.auth.init();
+   // this.auth.init();
   }
 }

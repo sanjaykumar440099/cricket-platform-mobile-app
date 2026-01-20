@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { scorerGuard } from './core/guards/scorer.guard';
 
 export const routes: Routes = [
   {
@@ -7,13 +6,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/profile/login/login.page')
         .then(m => m.LoginPage),
-  },
-  {
-    path: 'scoring',
-    canActivate: [scorerGuard],
-    loadComponent: () =>
-      import('./features/scoring/scoring.page')
-        .then(m => m.ScoringPage),
   },
   {
     path: 'live/stadium',

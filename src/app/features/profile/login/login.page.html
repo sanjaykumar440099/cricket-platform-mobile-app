@@ -1,11 +1,12 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Login</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ion-padding">
-  <ion-button expand="block" (click)="login('ADMIN')">Admin</ion-button>
-  <ion-button expand="block" (click)="login('SCORER')">Scorer</ion-button>
-  <ion-button expand="block" (click)="login('VIEWER')">Viewer</ion-button>
+  <div class="login-card">
+    <h2>Scorer Login</h2>
+
+    <ion-input placeholder="Email" [(ngModel)]="email"></ion-input>
+    <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
+
+    <ion-button expand="block" (click)="login()">
+      Login
+    </ion-button>
+  </div>
 </ion-content>

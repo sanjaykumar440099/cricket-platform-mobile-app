@@ -1,36 +1,45 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { AuthUser } from './auth-user.model';
-import { UserRole } from './roles.model';
+import { TokenStorage } from '../storage/token.storage';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private userSubject = new BehaviorSubject<AuthUser | null>(null);
-  user$ = this.userSubject.asObservable();
+  private API = 'http://localhost:3000/api';
 
-  get currentUser() {
-    return this.userSubject.value;
+  constructor(private http: HttpClient) {}
+
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.API}/auth/login`, { email, password })
+      .pipe(
+        tap(async res => {
+          await TokenStorage.setTokens(res.accessToken, res.refreshToken);
+        })
+      );
   }
 
-  init() {
-    const stored = localStorage.getItem('auth_user');
-    if (stored) {
-      this.userSubject.next(JSON.parse(stored));
-    }
-  }
-
-  loginAs(role: UserRole) {
-    const user: AuthUser = {
-      id: crypto.randomUUID(),
-      name: role.toLowerCase(),
-      role,
-    };
-    localStorage.setItem('auth_user', JSON.stringify(user));
-    this.userSubject.next(user);
+  refreshToken(refreshToken: string): Observable<any> {
+    return this.http.post<any>(`${this.API}/auth/refresh`, { refreshToken })
+      .pipe(
+        tap(async res => {
+          await TokenStorage.setTokens(res.accessToken, res.refreshToken);
+        })
+      );
   }
 
   logout() {
-    localStorage.removeItem('auth_user');
-    this.userSubject.next(null);
+    TokenStorage.clear();
+  }
+
+  getAccessToken(): Promise<string | null> {
+    return TokenStorage.getAccess();
+  }
+
+  getRefreshToken(): Promise<string | null> {
+    return TokenStorage.getRefresh();
+  }
+
+   storeTokens(accessToken: string, refreshToken: string): Promise<void> {
+    return TokenStorage.setTokens(accessToken, refreshToken);
   }
 }
