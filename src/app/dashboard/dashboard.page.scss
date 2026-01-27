@@ -1,0 +1,45 @@
+.kpi-row {
+    align-items: stretch;
+    margin: 0 5px;
+}
+
+.kpi-card {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 12px;
+}
+
+.kpi-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.kpi-label {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+.live-icon {
+    position: relative;
+    animation: pulse 1.5s infinite;
+    border-radius: 50%;
+    --border-color: var(--ion-color-danger);
+    color: var(--ion-color-danger);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--ion-color-danger-rgb), 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 8px rgba(var(--ion-color-danger-rgb), 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--ion-color-danger-rgb), 0);
+    }
+}

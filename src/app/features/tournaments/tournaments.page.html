@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Tournaments</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-card>
+    <ion-card-header>Create Tournament</ion-card-header>
+    <ion-card-content>
+
+      <ion-input placeholder="Tournament Name" [(ngModel)]="name">
+      </ion-input>
+
+      <ion-select placeholder="Format" [(ngModel)]="format">
+        <ion-select-option value="T20">T20</ion-select-option>
+        <ion-select-option value="ODI">ODI</ion-select-option>
+        <ion-select-option value="TEST">TEST</ion-select-option>
+      </ion-select>
+
+      <ion-button (click)="create()" expand="full">
+        Create Tournament
+      </ion-button>
+
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-item button *ngFor="let t of tournaments" (click)="open(t)">
+      <ion-label>
+        <h2>{{ t.name }}</h2>
+        <p>Format: {{ t.format }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

@@ -1,3 +1,54 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-split-pane contentId="main-content">
+
+    <!-- SIDE MENU -->
+    <ion-menu contentId="main-content" type="overlay">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Settings</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <ion-list inset="true">
+
+          <ion-item lines="none">
+            <ion-icon name="contrast-outline" slot="start"></ion-icon>
+            <ion-label>Dark Mode</ion-label>
+            <ion-toggle [checked]="theme.isDark()" (ionChange)="toggleTheme($event)">
+            </ion-toggle>
+          </ion-item>
+
+          <!-- MENU ITEMS -->
+          <ion-item routerLink="/admin/dashboard">
+            <ion-icon name="grid-outline" slot="start"></ion-icon>
+            Dashboard
+          </ion-item>
+
+          <ion-item routerLink="/admin/teams">
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            Teams
+          </ion-item>
+
+          <ion-item routerLink="/admin/players">
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            Players
+          </ion-item>
+
+          <ion-item routerLink="/admin/live">
+            <ion-icon name="radio-outline" slot="start"></ion-icon>
+            Live Matches
+          </ion-item>
+
+        </ion-list>
+      </ion-content>
+    </ion-menu>
+
+
+    <!-- MAIN OUTLET -->
+    <div class="ion-page" id="main-content">
+      <ion-router-outlet></ion-router-outlet>
+    </div>
+
+  </ion-split-pane>
 </ion-app>

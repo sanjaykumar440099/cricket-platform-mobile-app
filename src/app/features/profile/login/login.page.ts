@@ -17,12 +17,21 @@ export class LoginPage {
   constructor(
     private auth: AuthService,
     private router: Router,
-  ) {}
+  ) { }
 
   login() {
-    this.auth.login(this.email, this.password).subscribe(async res => {
-      await this.auth.storeTokens(res.accessToken, res.refreshToken);
-      this.router.navigate(['/matches']);
+    this.auth.login(this.email, this.password).subscribe(async () => {
+      const user = await this.auth.getUserFromToken();
+
+      if (!user) return;
+
+      if (user.role === 'admin') {
+        this.router.navigate(['/admin/dashboard']);
+      } else if (user.role === 'scorer') {
+        this.router.navigate(['/matches/assigned']);
+      } else {
+        this.router.navigate(['/live']);
+      }
     });
   }
 }

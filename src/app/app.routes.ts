@@ -14,4 +14,16 @@ export const routes: Routes = [
         .then(m => m.StadiumPageModule),
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
+  {
+    path: 'admin/dashboard',
+    loadComponent: () => import('./dashboard/dashboard.page').then( m => m.DashboardPage)
+  },
+  {
+    path: 'admin/tournaments',
+    loadComponent: () => import('./features/tournaments/tournaments.page').then( m => m.TournamentsPage)
+  },
+  {
+    path: 'admin/teams/:id',
+    loadComponent: () => import('./features/teams/teams.page').then( m => m.TeamsPage)
+  },
 ];

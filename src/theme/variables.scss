@@ -1,2 +1,42 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+/* =======================
+   LIGHT THEME (DEFAULT)
+   ======================= */
+:root {
+  --ion-color-primary: #1e88e5;
+  --ion-color-secondary: #26a69a;
+  --ion-color-tertiary: #ffb300;
+
+  --ion-background-color: #f5f7fa;
+  --ion-text-color: #1a1a1a;
+
+  --ion-card-background: #ffffff;
+  --ion-item-background: #ffffff;
+
+  --score-button-bg: #e3f2fd;
+  --score-button-text: #0d47a1;
+}
+
+/* =======================
+   DARK THEME
+   ======================= */
+.dark {
+  --ion-color-primary: #90caf9;
+  --ion-color-secondary: #80cbc4;
+  --ion-color-tertiary: #ffd54f;
+
+  --ion-background-color: #121212;
+  --ion-text-color: #ffffff;
+
+  --ion-card-background: #1e1e1e;
+  --ion-item-background: #1e1e1e;
+
+  --ion-toolbar-background: #1e1e1e;
+  --ion-toolbar-color: #ffffff;
+  --ion-toolbar-border-color: #333;
+
+  --score-button-bg: #263238;
+  --score-button-text: #e3f2fd;
+
+  --ion-toolbar-background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(10px);
+}
