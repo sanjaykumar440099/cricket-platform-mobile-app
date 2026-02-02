@@ -7,6 +7,7 @@ import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 import { refreshInterceptor } from './app/core/interceptors/refresh.interceptor';
+
 import { addIcons } from 'ionicons';
 import {
   peopleOutline,
@@ -14,6 +15,13 @@ import {
   calendarOutline,
   radioOutline,
   trophyOutline,
+
+  // ✅ ADD THESE
+  createOutline,
+  trashOutline,
+  addCircleOutline,
+  closeOutline,
+  chevronForwardOutline
 } from 'ionicons/icons';
 
 /* REGISTER ICONS */
@@ -23,6 +31,13 @@ addIcons({
   'calendar-outline': calendarOutline,
   'radio-outline': radioOutline,
   'trophy-outline': trophyOutline,
+
+  // ✅ NEW ICONS
+  'create-outline': createOutline,
+  'trash-outline': trashOutline,
+  'add-circle-outline': addCircleOutline,
+  'close-outline': closeOutline,
+  'chevron-forward-outline': chevronForwardOutline,
 });
 
 bootstrapApplication(AppComponent, {
