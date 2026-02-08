@@ -26,38 +26,39 @@
 
   <!-- Tournament Cards -->
   <ion-card *ngFor="let t of tournaments" class="tournament-card">
-  <ion-card-content>
-    <div class="card-row">
+    <ion-card-content>
+      <div class="card-row">
 
-      <!-- Info -->
-      <div class="info" (click)="open(t)">
-        <h2>{{ t.name }}</h2>
-        <ion-chip color="primary">{{ t.format }}</ion-chip>
+        <!-- Info -->
+        <div class="info" (click)="open(t)">
+          <h2>{{ t.name }}</h2>
+          <ion-chip color="primary">{{ t.format }}</ion-chip>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+
+          <!-- Teams -->
+          <ion-button fill="clear" size="small" color="secondary" (click)="goToTeams(t); $event.stopPropagation()">
+            <ion-icon name="people-outline"></ion-icon>
+          </ion-button>
+
+          <!-- Edit -->
+          <ion-button fill="clear" size="small" (click)="edit(t); $event.stopPropagation()">
+            <ion-icon name="create-outline"></ion-icon>
+          </ion-button>
+
+          <!-- Delete -->
+          <ion-button fill="clear" color="danger" size="small" (click)="confirmDelete(t); $event.stopPropagation()">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+
+        </div>
+
       </div>
+    </ion-card-content>
+  </ion-card>
 
-      <!-- Actions -->
-      <div class="actions">
-        <ion-button
-          fill="clear"
-          size="small"
-          (click)="edit(t); $event.stopPropagation()"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
-
-        <ion-button
-          fill="clear"
-          color="danger"
-          size="small"
-          (click)="confirmDelete(t); $event.stopPropagation()"
-        >
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-      </div>
-
-    </div>
-  </ion-card-content>
-</ion-card>
 
 
 </ion-content>

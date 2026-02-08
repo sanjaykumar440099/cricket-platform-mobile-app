@@ -26,4 +26,8 @@ export const routes: Routes = [
     path: 'admin/teams/:id',
     loadComponent: () => import('./features/teams/teams.page').then( m => m.TeamsPage)
   },
+  {
+    path: 'admin/teams/:teamId/players',
+    loadComponent: () => import('./features/players/players.page').then( m => m.PlayersPage)
+  },
 ];

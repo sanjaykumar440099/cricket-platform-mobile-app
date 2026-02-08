@@ -23,7 +23,7 @@ export class TournamentsPage implements OnInit {
     private router: Router,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.load();
@@ -111,5 +111,13 @@ export class TournamentsPage implements OnInit {
       },
       error: err => console.error('Delete failed', err)
     });
+  }
+
+  // got to teams page
+  goToTeams(tournament: any) {
+    this.router.navigate([
+      '/admin/teams',
+      tournament.id,
+    ]);
   }
 }

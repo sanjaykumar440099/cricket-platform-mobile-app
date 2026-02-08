@@ -1,13 +1,49 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>teams</ion-title>
+    <ion-title>Teams</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateTeamModal()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Add Team
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">teams</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+
+  <!-- Empty State -->
+  <div *ngIf="teams.length === 0" class="empty-state">
+    <ion-icon name="people-outline" size="large"></ion-icon>
+    <h3>No teams yet</h3>
+    <p>Add teams for this tournament</p>
+  </div>
+
+  <!-- Teams List -->
+  <ion-list *ngIf="teams.length > 0">
+    <ion-item *ngFor="let team of teams">
+
+      <!-- Team Info -->
+      <ion-label>
+        <h2>{{ team.name }}</h2>
+        <p *ngIf="team.shortName">{{ team.shortName }}</p>
+        <p>Players: {{ team.players?.length || 0 }}</p>
+      </ion-label>
+
+      <!-- Actions -->
+      <ion-buttons slot="end">
+        <!-- Manage Players -->
+        <ion-button
+          fill="clear"
+          color="primary"
+          (click)="goToPlayers(team)"
+        >
+          Manage Players
+        </ion-button>
+      </ion-buttons>
+
+    </ion-item>
+  </ion-list>
+
 </ion-content>

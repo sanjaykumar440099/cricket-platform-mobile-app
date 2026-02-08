@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Players</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreatePlayerModal()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Add Player
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Empty State -->
+  <div *ngIf="players.length === 0" class="empty-state">
+    <ion-icon name="person-outline" size="large"></ion-icon>
+    <h3>No players yet</h3>
+    <p>Add players to this team</p>
+  </div>
+
+  <!-- Players List -->
+  <ion-list *ngIf="players.length > 0">
+    <ion-item *ngFor="let player of players">
+      <ion-label>
+        <h2>{{ player.name }}</h2>
+        <p *ngIf="player.role">{{ player.role }}</p>
+      </ion-label>
+
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="danger"
+        (click)="deletePlayer(player.id)">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+</ion-content>
