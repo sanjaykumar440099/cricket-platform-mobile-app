@@ -15,50 +15,80 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-
-  <!-- Empty state -->
-  <div *ngIf="tournaments.length === 0" class="empty-state">
-    <ion-icon name="trophy-outline"></ion-icon>
-    <h3>No tournaments yet</h3>
-    <p>Create your first tournament</p>
-  </div>
-
-  <!-- Tournament Cards -->
-  <ion-card *ngFor="let t of tournaments" class="tournament-card">
-    <ion-card-content>
-      <div class="card-row">
-
-        <!-- Info -->
-        <div class="info" (click)="open(t)">
-          <h2>{{ t.name }}</h2>
-          <ion-chip color="primary">{{ t.format }}</ion-chip>
-        </div>
-
-        <!-- Actions -->
-        <div class="actions">
-
-          <!-- Teams -->
-          <ion-button fill="clear" size="small" color="secondary" (click)="goToTeams(t); $event.stopPropagation()">
-            <ion-icon name="people-outline"></ion-icon>
-          </ion-button>
-
-          <!-- Edit -->
-          <ion-button fill="clear" size="small" (click)="edit(t); $event.stopPropagation()">
-            <ion-icon name="create-outline"></ion-icon>
-          </ion-button>
-
-          <!-- Delete -->
-          <ion-button fill="clear" color="danger" size="small" (click)="confirmDelete(t); $event.stopPropagation()">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-
-        </div>
-
+<ion-content [fullscreen]="true">
+  <div class="app-page-shell tournaments-shell">
+    <section class="tournaments-hero glass-panel">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="trophy-outline"></ion-icon>
+          Tournament Desk
+        </p>
+        <h1>Organize leagues, fixtures, teams, and player flows from one board.</h1>
+        <p class="app-section-copy">
+          Every tournament becomes the starting point for your teams, players, live scoring, and premium match experiences.
+        </p>
       </div>
-    </ion-card-content>
-  </ion-card>
 
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <span>Total tournaments</span>
+          <strong>{{ tournaments.length }}</strong>
+        </div>
+        <div class="metric-card">
+          <span>Next step</span>
+          <strong>Teams & squads</strong>
+        </div>
+      </div>
+    </section>
 
+    <section *ngIf="isLoading" class="status-panel glass-panel">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading tournaments</h3>
+      <p>Pulling the latest tournament list from your database.</p>
+    </section>
 
+    <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+      <h3>Couldn’t load tournaments</h3>
+      <p>{{ errorMessage }}</p>
+      <ion-button fill="outline" (click)="load()">Try again</ion-button>
+    </section>
+
+    <div *ngIf="!isLoading && !errorMessage && tournaments.length === 0" class="empty-state glass-panel">
+      <ion-icon name="trophy-outline"></ion-icon>
+      <h3>No tournaments yet</h3>
+      <p>Create your first tournament to unlock the full admin workflow.</p>
+      <ion-button (click)="openCreateModal()">Create tournament</ion-button>
+    </div>
+
+    <div class="card-list" *ngIf="!isLoading && tournaments.length > 0">
+      <ion-card *ngFor="let t of tournaments" class="tournament-card">
+        <ion-card-content>
+          <div class="card-row">
+            <div class="info" (click)="open(t)">
+              <div class="card-top">
+                <ion-chip color="primary">{{ t.format }}</ion-chip>
+                <span class="link-copy">Open setup</span>
+              </div>
+              <h2>{{ t.name }}</h2>
+              <p>Open this tournament to manage teams, lineups, and match operations.</p>
+            </div>
+
+            <div class="actions">
+              <ion-button fill="clear" size="small" color="secondary" (click)="goToTeams(t); $event.stopPropagation()">
+                <ion-icon name="people-outline"></ion-icon>
+              </ion-button>
+
+              <ion-button fill="clear" size="small" (click)="edit(t); $event.stopPropagation()">
+                <ion-icon name="create-outline"></ion-icon>
+              </ion-button>
+
+              <ion-button fill="clear" color="danger" size="small" (click)="confirmDelete(t); $event.stopPropagation()">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
 </ion-content>

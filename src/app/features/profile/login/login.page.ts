@@ -8,11 +8,14 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   selector: 'app-login',
   templateUrl: './login.page.html',
+  styleUrls: ['./login.page.scss'],
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class LoginPage {
   email = '';
   password = '';
+  isSubmitting = false;
+  errorMessage = '';
 
   constructor(
     private auth: AuthService,
@@ -20,18 +23,39 @@ export class LoginPage {
   ) { }
 
   login() {
-    this.auth.login(this.email, this.password).subscribe(async () => {
-      const user = await this.auth.getUserFromToken();
+    if (!this.email || !this.password || this.isSubmitting) {
+      return;
+    }
 
-      if (!user) return;
+    this.isSubmitting = true;
+    this.errorMessage = '';
 
-      if (user.role === 'admin') {
-        this.router.navigate(['/admin/dashboard']);
-      } else if (user.role === 'scorer') {
-        this.router.navigate(['/matches/assigned']);
-      } else {
-        this.router.navigate(['/live']);
-      }
+    this.auth.login(this.email, this.password).subscribe({
+      next: async () => {
+        const user = await this.auth.getUserFromToken();
+        this.isSubmitting = false;
+
+        if (!user) {
+          this.errorMessage = 'Session created, but user details could not be read.';
+          return;
+        }
+
+        if (user.role === 'admin') {
+          this.router.navigate(['/admin/dashboard']);
+        } else if (user.role === 'scorer') {
+          this.router.navigate(['/live/stadium']);
+        } else {
+          this.router.navigate(['/home']);
+        }
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.errorMessage = 'Login failed. Please check your email and password.';
+      },
     });
+  }
+
+  go(path: string) {
+    this.router.navigate([path]);
   }
 }

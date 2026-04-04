@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController, AlertController } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { CricketApiService } from '../../core/api/cricket-api.service';
+import { TeamSummary } from '../../shared/models/api.models';
 import { CreateTeamModalComponent } from './create-teams/create-team.modal';
 @Component({
   selector: 'app-teams',
@@ -13,15 +15,14 @@ import { CreateTeamModalComponent } from './create-teams/create-team.modal';
   imports: [CommonModule, FormsModule, IonicModule],
 })
 export class TeamsPage implements OnInit {
-
   tournamentId!: string;
-  teams: any[] = [];
-
-  private API = 'http://localhost:3000/api/admin/tournaments';
+  teams: TeamSummary[] = [];
+  isLoading = false;
+  errorMessage = '';
 
   constructor(
     private route: ActivatedRoute,
-    private http: HttpClient,
+    private readonly api: CricketApiService,
     private modalCtrl: ModalController,
     private router: Router
   ) { }
@@ -32,10 +33,21 @@ export class TeamsPage implements OnInit {
   }
 
   loadTeams() {
-    this.http
-      .get<any[]>(`${this.API}/${this.tournamentId}/teams`)
-      .subscribe(res => {
-        this.teams = res;
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.api.getTournamentTeams(this.tournamentId)
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
+      .subscribe({
+        next: res => {
+          this.teams = res;
+        },
+        error: err => {
+          console.error('Failed to load teams', err);
+          this.errorMessage = 'Unable to load teams for this tournament right now.';
+        },
       });
   }
 

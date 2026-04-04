@@ -12,16 +12,27 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <section *ngIf="isLoading" class="status-panel glass-panel">
+    <ion-spinner name="crescent"></ion-spinner>
+    <h3>Loading players</h3>
+    <p>Fetching the current squad from the database.</p>
+  </section>
+
+  <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+    <h3>Couldn’t load players</h3>
+    <p>{{ errorMessage }}</p>
+    <ion-button fill="outline" (click)="loadPlayers()">Try again</ion-button>
+  </section>
 
   <!-- Empty State -->
-  <div *ngIf="players.length === 0" class="empty-state">
+  <div *ngIf="!isLoading && !errorMessage && players.length === 0" class="empty-state">
     <ion-icon name="person-outline" size="large"></ion-icon>
     <h3>No players yet</h3>
     <p>Add players to this team</p>
   </div>
 
   <!-- Players List -->
-  <ion-list *ngIf="players.length > 0">
+  <ion-list *ngIf="!isLoading && players.length > 0">
     <ion-item *ngFor="let player of players">
       <ion-label>
         <h2>{{ player.name }}</h2>
@@ -32,6 +43,7 @@
         slot="end"
         fill="clear"
         color="danger"
+        [disabled]="deletingPlayerId === player.id"
         (click)="deletePlayer(player.id)">
         <ion-icon name="trash-outline"></ion-icon>
       </ion-button>

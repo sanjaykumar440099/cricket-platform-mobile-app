@@ -1,59 +1,140 @@
+.tournaments-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.tournaments-hero,
 .empty-state {
-    text-align: center;
-    margin-top: 30%;
+  padding: 22px;
+  border-radius: 30px;
+}
 
-    ion-icon {
-        font-size: 64px;
-        color: var(--ion-color-medium);
-    }
+.tournaments-hero {
+  display: grid;
+  gap: 16px;
+}
 
-    h3 {
-        margin-top: 12px;
-        font-weight: 600;
-    }
+.tournaments-hero h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 5vw, 2.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
 
-    p {
-        color: var(--ion-color-medium);
-    }
+.hero-metrics {
+  display: grid;
+  gap: 12px;
+}
+
+.metric-card {
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid var(--app-stroke);
+}
+
+.metric-card span,
+.metric-card strong {
+  display: block;
+}
+
+.metric-card span {
+  color: var(--app-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-card strong {
+  margin-top: 8px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--app-text);
+}
+
+.empty-state {
+  text-align: center;
+}
+
+.empty-state ion-icon {
+  font-size: 3.6rem;
+  color: var(--ion-color-secondary);
+}
+
+.empty-state h3 {
+  margin: 12px 0 8px;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.empty-state p {
+  margin: 0 0 16px;
+  color: var(--app-muted);
+  line-height: 1.55;
+}
+
+.card-list {
+  display: grid;
+  gap: 14px;
 }
 
 .tournament-card {
-    margin-bottom: 14px;
-    border-radius: 14px;
+  margin: 0;
+  border-radius: 24px;
 }
 
 .card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    h2 {
-        margin: 0 0 6px;
-        font-size: 18px;
-        font-weight: 600;
-    }
-
-    ion-icon {
-        font-size: 22px;
-        color: var(--ion-color-medium);
-    }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
 
-.card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .info {
-    flex: 1;
+  flex: 1;
+}
+
+.info h2 {
+  margin: 0 0 8px;
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--app-text);
+}
+
+.info p {
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.5;
+}
+
+.link-copy {
+  color: var(--ion-color-primary);
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 .actions {
-    display: flex;
-    gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 ion-icon {
-    font-size: 20px;
+  font-size: 1.15rem;
+}
+
+@media (min-width: 780px) {
+  .tournaments-hero {
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: center;
+  }
 }

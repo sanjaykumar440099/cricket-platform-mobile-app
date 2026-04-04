@@ -1,0 +1,155 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, map, Observable } from 'rxjs';
+import { ApiConfigService } from './api-config.service';
+import {
+  CommentaryEntry,
+  DashboardSnapshot,
+  LiveMatchesIndex,
+  PlayerSummary,
+  PublicLiveMatchDetail,
+  SubscriptionPlan,
+  SubscriptionSummary,
+  TeamSummary,
+  TournamentSummary,
+} from '../../shared/models/api.models';
+
+@Injectable({ providedIn: 'root' })
+export class CricketApiService {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly apiConfig: ApiConfigService,
+  ) {}
+
+  getSubscriptionPlans(): Observable<SubscriptionPlan[]> {
+    return this.http.get<SubscriptionPlan[]>(
+      this.apiConfig.url('subscriptions/plans'),
+    );
+  }
+
+  getMySubscription(): Observable<SubscriptionSummary> {
+    return this.http.get<SubscriptionSummary>(
+      this.apiConfig.url('subscriptions/me'),
+    );
+  }
+
+  getTournaments(): Observable<TournamentSummary[]> {
+    return this.http.get<TournamentSummary[]>(
+      this.apiConfig.url('admin/tournaments'),
+    );
+  }
+
+  createTournament(payload: {
+    name: string;
+    format: 'T20' | 'ODI' | 'TEST';
+  }) {
+    return this.http.post(
+      this.apiConfig.url('admin/tournaments'),
+      payload,
+    );
+  }
+
+  updateTournament(
+    tournamentId: string,
+    payload: Partial<{
+      name: string;
+      format: 'T20' | 'ODI' | 'TEST';
+    }>,
+  ) {
+    return this.http.patch(
+      this.apiConfig.url(`admin/tournaments/${tournamentId}`),
+      payload,
+    );
+  }
+
+  deleteTournament(tournamentId: string) {
+    return this.http.delete(
+      this.apiConfig.url(`admin/tournaments/${tournamentId}`),
+    );
+  }
+
+  getTournamentTeams(tournamentId: string): Observable<TeamSummary[]> {
+    return this.http.get<TeamSummary[]>(
+      this.apiConfig.url(`admin/tournaments/${tournamentId}/teams`),
+    );
+  }
+
+  createTeam(
+    tournamentId: string,
+    payload: { name: string; shortName?: string },
+  ) {
+    return this.http.post(
+      this.apiConfig.url(`admin/tournaments/${tournamentId}/teams`),
+      payload,
+    );
+  }
+
+  getTeamPlayers(teamId: string): Observable<PlayerSummary[]> {
+    return this.http.get<PlayerSummary[]>(
+      this.apiConfig.url(`admin/teams/${teamId}/players`),
+    );
+  }
+
+  createPlayer(
+    teamId: string,
+    payload: { name: string; role?: string },
+  ) {
+    return this.http.post(
+      this.apiConfig.url(`admin/teams/${teamId}/players`),
+      payload,
+    );
+  }
+
+  deletePlayer(playerId: string) {
+    return this.http.delete(
+      this.apiConfig.url(`admin/players/${playerId}`),
+    );
+  }
+
+  getLiveMatches(): Observable<LiveMatchesIndex> {
+    return this.http.get<LiveMatchesIndex>(
+      this.apiConfig.url('public/matches/live'),
+    );
+  }
+
+  getLiveMatch(matchId: string): Observable<PublicLiveMatchDetail> {
+    return this.http.get<PublicLiveMatchDetail>(
+      this.apiConfig.url(`public/matches/${matchId}/live`),
+    );
+  }
+
+  getLiveSpectators(matchId: string): Observable<{ spectators: number }> {
+    return this.http.get<{ spectators: number }>(
+      this.apiConfig.url(`public/matches/${matchId}/spectators`),
+    );
+  }
+
+  getCommentary(
+    matchId: string,
+    limit: number = 8,
+  ): Observable<CommentaryEntry[]> {
+    return this.http.get<CommentaryEntry[]>(
+      this.apiConfig.url(`commentary/matches/${matchId}?limit=${limit}`),
+    );
+  }
+
+  getDashboardSnapshot(): Observable<DashboardSnapshot> {
+    return forkJoin({
+      tournaments: this.getTournaments(),
+      liveMatches: this.getLiveMatches(),
+    }).pipe(
+      map(({ tournaments, liveMatches }) => ({
+        tournaments,
+        liveMatches,
+        totalTeams: tournaments.reduce(
+          (sum, tournament) => sum + (tournament.teams?.length ?? 0),
+          0,
+        ),
+        totalMatches: tournaments.reduce(
+          (sum, tournament) => sum + (tournament.matches?.length ?? 0),
+          0,
+        ),
+      })),
+    );
+  }
+}

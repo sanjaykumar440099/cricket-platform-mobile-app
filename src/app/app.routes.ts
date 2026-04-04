@@ -2,6 +2,11 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: 'home',
+    loadComponent: () =>
+      import('./home/home.page').then(m => m.HomePage),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/profile/login/login.page')
@@ -13,7 +18,7 @@ export const routes: Routes = [
       import('./features/live/stadium/stadium.module')
         .then(m => m.StadiumPageModule),
   },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: 'admin/dashboard',
     loadComponent: () => import('./dashboard/dashboard.page').then( m => m.DashboardPage)
@@ -30,4 +35,5 @@ export const routes: Routes = [
     path: 'admin/teams/:teamId/players',
     loadComponent: () => import('./features/players/players.page').then( m => m.PlayersPage)
   },
+  { path: '**', redirectTo: 'home' },
 ];

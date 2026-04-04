@@ -12,16 +12,27 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <section *ngIf="isLoading" class="status-panel glass-panel">
+    <ion-spinner name="crescent"></ion-spinner>
+    <h3>Loading teams</h3>
+    <p>Fetching the latest squads for this tournament.</p>
+  </section>
+
+  <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+    <h3>Couldn’t load teams</h3>
+    <p>{{ errorMessage }}</p>
+    <ion-button fill="outline" (click)="loadTeams()">Try again</ion-button>
+  </section>
 
   <!-- Empty State -->
-  <div *ngIf="teams.length === 0" class="empty-state">
+  <div *ngIf="!isLoading && !errorMessage && teams.length === 0" class="empty-state">
     <ion-icon name="people-outline" size="large"></ion-icon>
     <h3>No teams yet</h3>
     <p>Add teams for this tournament</p>
   </div>
 
   <!-- Teams List -->
-  <ion-list *ngIf="teams.length > 0">
+  <ion-list *ngIf="!isLoading && teams.length > 0">
     <ion-item *ngFor="let team of teams">
 
       <!-- Team Info -->

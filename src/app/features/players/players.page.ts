@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { IonicModule, ModalController, AlertController } from '@ionic/angular';
+import { finalize } from 'rxjs';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { CreatePlayerModalComponent } from './create-player/create-player.modal';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CricketApiService } from '../../core/api/cricket-api.service';
+import { PlayerSummary } from '../../shared/models/api.models';
 
 @Component({
   selector: 'app-players',
@@ -14,15 +16,15 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule, IonicModule],
 })
 export class PlayersPage implements OnInit {
-
   teamId!: string;
-  players: any[] = [];
-
-  private API = 'http://localhost:3000/api/admin';
+  players: PlayerSummary[] = [];
+  isLoading = false;
+  errorMessage = '';
+  deletingPlayerId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private http: HttpClient,
+    private readonly api: CricketApiService,
     private modalCtrl: ModalController,
   ) { }
 
@@ -32,10 +34,21 @@ export class PlayersPage implements OnInit {
   }
 
   loadPlayers() {
-    this.http
-      .get<any[]>(`${this.API}/teams/${this.teamId}/players`)
-      .subscribe(res => {
-        this.players = res;
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.api.getTeamPlayers(this.teamId)
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
+      .subscribe({
+        next: res => {
+          this.players = res;
+        },
+        error: err => {
+          console.error('Failed to load players', err);
+          this.errorMessage = 'Unable to load players for this team right now.';
+        },
       });
   }
 
@@ -57,10 +70,20 @@ export class PlayersPage implements OnInit {
   }
 
   deletePlayer(playerId: string) {
-    this.http
-      .delete(`${this.API}/players/${playerId}`)
-      .subscribe(() => {
-        this.loadPlayers();
+    this.deletingPlayerId = playerId;
+
+    this.api.deletePlayer(playerId)
+      .pipe(finalize(() => {
+        this.deletingPlayerId = null;
+      }))
+      .subscribe({
+        next: () => {
+          this.loadPlayers();
+        },
+        error: err => {
+          console.error('Delete failed', err);
+          this.errorMessage = 'Unable to delete the player right now.';
+        },
       });
   }
 

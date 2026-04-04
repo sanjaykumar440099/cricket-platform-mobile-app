@@ -1,27 +1,272 @@
-#container {
-  text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.home-shell {
+  display: grid;
+  gap: 22px;
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.hero-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 32px;
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
+.hero-copy h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
 
-  color: #8c8c8c;
-
+.hero-text {
   margin: 0;
+  color: var(--app-muted);
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
-#container a {
-  text-decoration: none;
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0 18px;
+}
+
+.score-preview {
+  display: flex;
+}
+
+.preview-card {
+  width: 100%;
+  padding: 18px;
+  border-radius: 28px;
+  background: var(--app-accent-gradient);
+  color: #f6fbff;
+  box-shadow: var(--app-shadow);
+}
+
+.status-row,
+.team-score,
+.momentum-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.status-row {
+  margin-bottom: 18px;
+}
+
+.live-pill,
+.venue-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff765f;
+  box-shadow: 0 0 0 6px rgba(255, 118, 95, 0.16);
+}
+
+.fixture-row {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.fixture-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.fixture-copy {
+  color: rgba(246, 251, 255, 0.78);
+  line-height: 1.5;
+}
+
+.team-score {
+  padding: 12px 0;
+}
+
+.team-score.alt {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.team-name {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: rgba(246, 251, 255, 0.78);
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.score.chase {
+  color: #ffd68f;
+}
+
+.overs {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: rgba(246, 251, 255, 0.78);
+}
+
+.momentum-strip {
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.preview-empty {
+  min-height: 100%;
+}
+
+.momentum-chip {
+  min-width: 84px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.momentum-chip strong,
+.momentum-chip span {
+  display: block;
+}
+
+.momentum-chip strong {
+  font-size: 1rem;
+}
+
+.momentum-chip span {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: rgba(246, 251, 255, 0.72);
+}
+
+.plans-section,
+.cta-ribbon {
+  padding: 4px 2px;
+}
+
+.section-head {
+  margin-bottom: 14px;
+}
+
+.plan-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.plan-card {
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.plan-card.soft-green {
+  border-color: rgba(15, 138, 95, 0.18);
+}
+
+.plan-card.navy {
+  border-color: rgba(24, 52, 79, 0.18);
+}
+
+.plan-card.gold {
+  border-color: rgba(217, 143, 43, 0.24);
+}
+
+.plan-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.plan-top h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.currency,
+.period {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--app-muted);
+}
+
+ul {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--app-text);
+  line-height: 1.45;
+}
+
+li ion-icon {
+  margin-top: 2px;
+  color: var(--ion-color-primary);
+}
+
+.cta-ribbon {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(217, 143, 43, 0.14), rgba(15, 138, 95, 0.16));
+  border: 1px solid var(--app-stroke);
+}
+
+.cta-ribbon h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (min-width: 860px) {
+  .hero-panel {
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    align-items: center;
+  }
+
+  .plan-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cta-ribbon {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
 }

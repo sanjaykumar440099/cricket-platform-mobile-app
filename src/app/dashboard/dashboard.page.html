@@ -4,117 +4,88 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Admin Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="go('/live/stadium')">
+        <ion-icon name="radio-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-card>
-    <ion-card-content>
-      <h2>Manage tournaments, teams, players & matches</h2>
-      <ion-button (click)="go('/admin/tournaments')" expand="full">
-        Manage Tournament
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
+<ion-content [fullscreen]="true">
+  <div class="app-page-shell dashboard-shell">
+    <section class="hero-card glass-panel">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="grid-outline"></ion-icon>
+          Match Operations Hub
+        </p>
+        <h1>Manage tournaments, scoring, and premium fan moments from one dashboard.</h1>
+        <p class="hero-copy">
+          This admin workspace is optimized for quick touch actions, clear hierarchy, and fast handoff into live match control.
+        </p>
+      </div>
 
-  <ion-grid>
-    <ion-row class="kpi-row">
-      <ion-col size="4">
-        <ion-card class="kpi-card">
-          <ion-card-content>
-            <div class="kpi-value">1</div>
-            <div class="kpi-label">Tournament</div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
+      <div class="hero-actions">
+        <ion-button (click)="go('/admin/tournaments')">
+          Tournament Desk
+          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="outline" (click)="go('/live/stadium')">
+          Preview Stadium
+        </ion-button>
+      </div>
+    </section>
 
-      <ion-col size="4">
-        <ion-card class="kpi-card">
-          <ion-card-content>
-            <div class="kpi-value">48</div>
-            <div class="kpi-label">Teams</div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
+    <section *ngIf="isLoading" class="status-panel glass-panel">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading dashboard</h3>
+      <p>Fetching tournament, live match, and subscription data from the API.</p>
+    </section>
 
-      <ion-col size="4">
-        <ion-card class="kpi-card">
-          <ion-card-content>
-            <div class="kpi-value">3</div>
-            <div class="kpi-label">Live Matches</div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+      <h3>Couldn’t load dashboard</h3>
+      <p>{{ errorMessage }}</p>
+      <ion-button fill="outline" (click)="loadDashboard()">Try again</ion-button>
+    </section>
 
+    <section class="stat-grid" *ngIf="!isLoading && stats.length > 0">
+      <article class="stat-card glass-panel" *ngFor="let stat of stats">
+        <span class="stat-label">{{ stat.label }}</span>
+        <strong class="stat-value">{{ stat.value }}</strong>
+        <span class="stat-note">{{ stat.note }}</span>
+      </article>
+    </section>
 
-  <ion-grid>
-    <ion-row class="kpi-row">
-      <ion-col size="6">
-        <ion-card class="kpi-card">
-          <ion-card-content>
-            <ion-button fill="outline" size="small">
-              <ion-icon name="people-outline"></ion-icon>
-            </ion-button>
-            <div class="kpi-text">
-              <h3><strong>Teams</strong></h3>
-              <p>Create & manage teams</p>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
+    <section class="section-stack">
+      <div class="section-head">
+        <h2 class="app-section-title">Quick actions</h2>
+        <p class="app-section-copy">Move directly into the workflows your operators use most often.</p>
+      </div>
 
-      <ion-col size="6">
-        <ion-card class="kpi-card">
-          <ion-card-content>
-            <ion-button fill="outline" size="small">
-              <ion-icon name="person-outline"></ion-icon>
-            </ion-button>
-            <div class="kpi-text">
-              <h3><strong>Players</strong></h3>
-              <p>Add & assign <br /> players</p>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+      <div class="action-grid">
+        <article class="action-card glass-panel" *ngFor="let action of actionCards" (click)="go(action.route)">
+          <div class="action-icon-wrap">
+            <ion-icon [name]="action.icon"></ion-icon>
+          </div>
+          <h3>{{ action.title }}</h3>
+          <p>{{ action.copy }}</p>
+          <div class="action-cta">
+            {{ action.cta }}
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </div>
+        </article>
+      </div>
+    </section>
 
-  <ion-grid>
-    <ion-row class="kpi-row">
-      <ion-col size="12">
-        <ion-card class="kpi-card" (click)="go('/admin/teams')">
-          <ion-card-content>
-            <ion-button fill="outline" size="small">
-              <ion-icon name="calendar-outline"></ion-icon>
-            </ion-button>
-            <div class="kpi-text">
-              <h3><strong>Matches</strong></h3>
-              <p>Schedule matches and assign scorers</p>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-
-  <ion-grid>
-    <ion-row class="kpi-row">
-      <ion-col size="12">
-        <ion-card class="kpi-card" (click)="go('/admin/live')">
-          <ion-card-content>
-            <ion-button fill="outline" size="small" class="live-icon">
-              <ion-icon name="radio-outline"></ion-icon>
-            </ion-button>
-            <div class="kpi-text">
-              <h3><strong>Live Matches</strong></h3>
-              <p>Monitor ongoing matches & spectators</p>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-
+    <section class="insight-panel glass-panel" *ngIf="insights.length > 0">
+      <p class="eyebrow">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        Product Guidance
+      </p>
+      <ul>
+        <li *ngFor="let insight of insights">{{ insight }}</li>
+      </ul>
+    </section>
+  </div>
 </ion-content>

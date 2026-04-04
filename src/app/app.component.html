@@ -1,54 +1,50 @@
 <ion-app>
-  <ion-split-pane contentId="main-content">
-
-    <!-- SIDE MENU -->
+  <ion-split-pane when="lg" contentId="main-content">
     <ion-menu contentId="main-content" type="overlay">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Settings</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <ion-content class="menu-shell">
+        <div class="menu-hero">
+          <div class="brand-mark">CP</div>
+          <div class="brand-copy">
+            <p class="eyebrow">Cricket Platform</p>
+            <h2>Mobile Matchdesk</h2>
+            <p>Run live scoring, tournaments, and premium match experiences from one clean console.</p>
+          </div>
+        </div>
 
-      <ion-content>
-        <ion-list inset="true">
-
-          <ion-item lines="none">
-            <ion-icon name="contrast-outline" slot="start"></ion-icon>
-            <ion-label>Dark Mode</ion-label>
-            <ion-toggle [checked]="theme.isDark()" (ionChange)="toggleTheme($event)">
-            </ion-toggle>
-          </ion-item>
-
-          <!-- MENU ITEMS -->
-          <ion-item routerLink="/admin/dashboard">
-            <ion-icon name="grid-outline" slot="start"></ion-icon>
-            Dashboard
-          </ion-item>
-
-          <ion-item routerLink="/admin/teams">
-            <ion-icon name="people-outline" slot="start"></ion-icon>
-            Teams
-          </ion-item>
-
-          <ion-item routerLink="/admin/players">
-            <ion-icon name="person-outline" slot="start"></ion-icon>
-            Players
-          </ion-item>
-
-          <ion-item routerLink="/admin/live">
-            <ion-icon name="radio-outline" slot="start"></ion-icon>
-            Live Matches
-          </ion-item>
-
+        <ion-list lines="none" class="menu-list">
+          <ion-menu-toggle auto-hide="false" *ngFor="let item of navItems">
+            <ion-item
+              class="menu-item"
+              detail="false"
+              [routerLink]="item.route"
+              routerDirection="root">
+              <ion-icon [name]="item.icon" slot="start"></ion-icon>
+              <ion-label>
+                <strong>{{ item.label }}</strong>
+                <p>{{ item.note }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-menu-toggle>
         </ion-list>
+
+        <div class="menu-footer glass-panel">
+          <div class="theme-row">
+            <div>
+              <p class="eyebrow">Display</p>
+              <h3>{{ theme.isDark() ? 'Night Match' : 'Pavilion Light' }}</h3>
+            </div>
+            <ion-toggle [checked]="theme.isDark()" (ionChange)="toggleTheme($event)"></ion-toggle>
+          </div>
+
+          <div class="menu-footnote">
+            Free, Basic, and Premium match experiences live in one app shell.
+          </div>
+        </div>
       </ion-content>
     </ion-menu>
 
-
-    <!-- MAIN OUTLET -->
     <div class="ion-page" id="main-content">
       <ion-router-outlet></ion-router-outlet>
     </div>
-
   </ion-split-pane>
 </ion-app>

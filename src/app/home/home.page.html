@@ -1,20 +1,172 @@
-<ion-header [translucent]="true">
+<ion-header translucent>
   <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+    <ion-title>Cricket Platform</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="go('/login')">
+        <ion-icon slot="start" name="log-in-outline"></ion-icon>
+        Login
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="app-page-shell home-shell">
+    <section class="hero-panel glass-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">
+          <ion-icon name="sparkles-outline"></ion-icon>
+          AI Live Scoring
+        </p>
+        <h1>Run your full cricket matchday from a clean mobile cockpit.</h1>
+        <p class="hero-text">
+          Score every ball, publish a stadium-style live feed, and move users
+          from free basics to premium match intelligence without leaving the app.
+        </p>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+        <div class="hero-actions">
+          <ion-button size="large" (click)="go('/admin/dashboard')">
+            Open Admin Dashboard
+            <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+          </ion-button>
+          <ion-button size="large" fill="outline" (click)="go('/live/stadium')">
+            <ion-icon slot="start" name="play-circle-outline"></ion-icon>
+            Preview Live Centre
+          </ion-button>
+        </div>
+
+        <div class="pill-row">
+          <span class="info-pill" *ngFor="let pillar of pillars">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            {{ pillar }}
+          </span>
+        </div>
+      </div>
+
+      <div class="score-preview">
+        <div class="preview-card live-card" *ngIf="preview; else previewFallback">
+          <div class="status-row">
+            <span class="live-pill">
+              <span class="live-dot"></span>
+              {{ preview.status }}
+            </span>
+            <span class="venue-pill">{{ preview.venue }}</span>
+          </div>
+
+          <div class="fixture-row">
+            <div class="fixture-title">{{ preview.matchup }}</div>
+            <div class="fixture-copy">Current innings snapshot pulled from your live API.</div>
+          </div>
+
+          <div class="team-score">
+            <div>
+              <div class="team-name">Current score</div>
+              <div class="score">{{ preview.scoreLine }}</div>
+            </div>
+            <div class="overs">{{ preview.overs }}</div>
+          </div>
+
+          <div class="team-score alt">
+            <div>
+              <div class="team-name">Run rate</div>
+              <div class="score chase">{{ preview.runRate }}</div>
+            </div>
+            <div class="overs">{{ preview.oversLimit }}</div>
+          </div>
+
+          <div class="momentum-strip">
+            <div *ngFor="let stat of quickStats" class="momentum-chip">
+              <strong>{{ stat.value }}</strong>
+              <span>{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #previewFallback>
+          <div class="preview-card live-card preview-empty">
+            <div class="status-row">
+              <span class="live-pill">
+                <span class="live-dot"></span>
+                {{ isLoadingPreview ? 'Checking live feed' : 'No live match yet' }}
+              </span>
+              <span class="venue-pill">API connected</span>
+            </div>
+
+            <div class="fixture-row">
+              <div class="fixture-title">
+                {{ isLoadingPreview ? 'Looking for a live match in the database' : 'Start a live match to populate this preview' }}
+              </div>
+              <div class="fixture-copy">
+                {{ previewError || 'The public preview card will update as soon as a match is marked live.' }}
+              </div>
+            </div>
+
+            <div class="momentum-strip">
+              <div *ngFor="let stat of quickStats" class="momentum-chip">
+                <strong>{{ stat.value }}</strong>
+                <span>{{ stat.label }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </section>
+
+    <section class="plans-section">
+      <div class="section-head">
+        <p class="eyebrow">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          Subscription Ready
+        </p>
+        <h2 class="app-section-title">Flexible plans for clubs, scorers, and premium fans.</h2>
+        <p class="app-section-copy">
+          Start with basic scoring, then unlock exports, AI match summaries, and richer live storytelling as your users grow.
+        </p>
+      </div>
+
+      <div class="plan-grid" *ngIf="plans.length > 0">
+        <article class="plan-card glass-panel" *ngFor="let plan of plans" [ngClass]="plan.accent">
+          <div class="plan-top">
+            <h3>{{ plan.name }}</h3>
+            <div class="price">
+              <span class="currency">$</span>{{ plan.price }}
+              <span class="period">/mo</span>
+            </div>
+          </div>
+
+          <ul>
+            <li *ngFor="let feature of plan.features">
+              <ion-icon name="checkmark-circle-outline"></ion-icon>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+
+      <section *ngIf="isLoadingPlans" class="status-panel glass-panel">
+        <ion-spinner name="crescent"></ion-spinner>
+        <h3>Loading plans</h3>
+        <p>Pulling subscription tiers from the backend.</p>
+      </section>
+
+      <section *ngIf="!isLoadingPlans && plansError" class="status-panel glass-panel error-panel">
+        <h3>Couldn’t load plans</h3>
+        <p>{{ plansError }}</p>
+      </section>
+    </section>
+
+    <section class="cta-ribbon">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="flash-outline"></ion-icon>
+          Quick Start
+        </p>
+        <h2>Jump in as an admin, scorer, or spectator.</h2>
+      </div>
+      <div class="cta-actions">
+        <ion-button fill="clear" (click)="go('/login')">Admin / Scorer Login</ion-button>
+        <ion-button color="tertiary" (click)="go('/live/stadium')">View Match Experience</ion-button>
+      </div>
+    </section>
   </div>
 </ion-content>

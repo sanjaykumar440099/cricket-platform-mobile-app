@@ -3,15 +3,20 @@ import { Injectable } from '@angular/core';
 import { TokenStorage } from '../storage/token.storage';
 import { Observable, tap } from 'rxjs';
 import { decodeJwt, JwtPayload } from './jwt.util';
+import { ApiConfigService } from '../api/api-config.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private API = 'http://localhost:3000/api';
-
-  constructor(private http: HttpClient) { }
+  constructor(
+    private readonly http: HttpClient,
+    private readonly apiConfig: ApiConfigService,
+  ) {}
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.API}/auth/login`, { email, password })
+    return this.http.post<any>(this.apiConfig.url('auth/login'), {
+      email,
+      password,
+    })
       .pipe(
         tap(async res => {
           await TokenStorage.setTokens(res.accessToken, res.refreshToken);
@@ -20,7 +25,9 @@ export class AuthService {
   }
 
   refreshToken(refreshToken: string): Observable<any> {
-    return this.http.post<any>(`${this.API}/auth/refresh`, { refreshToken })
+    return this.http.post<any>(this.apiConfig.url('auth/refresh'), {
+      refreshToken,
+    })
       .pipe(
         tap(async res => {
           await TokenStorage.setTokens(res.accessToken, res.refreshToken);

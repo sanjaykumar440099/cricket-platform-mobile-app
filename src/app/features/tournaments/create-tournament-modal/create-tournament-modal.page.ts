@@ -3,7 +3,9 @@ import { ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { CricketApiService } from '../../../core/api/cricket-api.service';
+import { TournamentSummary } from '../../../shared/models/api.models';
 
 @Component({
   selector: 'app-create-tournament-modal',
@@ -13,16 +15,16 @@ import { HttpClient } from '@angular/common/http';
 })
 export class CreateTournamentModalPage implements OnInit {
 
-  @Input() tournament?: any;
+  @Input() tournament?: TournamentSummary;
 
   name = '';
   format: 'T20' | 'ODI' | 'TEST' = 'T20';
-
-  private API = 'http://localhost:3000/api/admin/tournaments';
+  isSaving = false;
+  errorMessage = '';
 
   constructor(
     private modalCtrl: ModalController,
-    private http: HttpClient
+    private readonly api: CricketApiService,
   ) { }
 
   ngOnInit() {
@@ -37,6 +39,10 @@ export class CreateTournamentModalPage implements OnInit {
   }
 
   save() {
+    if (this.isSaving) {
+      return;
+    }
+
     if (this.tournament) {
       this.update();
     } else {
@@ -47,27 +53,47 @@ export class CreateTournamentModalPage implements OnInit {
   /* -------------------- CREATE -------------------- */
 
   private create() {
-    this.http.post(this.API, {
-      name: this.name,
+    this.isSaving = true;
+    this.errorMessage = '';
+
+    this.api.createTournament({
+      name: this.name.trim(),
       format: this.format,
-    }).subscribe(res => {
-      this.modalCtrl.dismiss(res);
-    });
+    })
+      .pipe(finalize(() => {
+        this.isSaving = false;
+      }))
+      .subscribe({
+        next: res => {
+          this.modalCtrl.dismiss(res);
+        },
+        error: () => {
+          this.errorMessage = 'Unable to save the tournament right now.';
+        },
+      });
   }
 
   /* -------------------- UPDATE -------------------- */
 
   private update() {
     const payload: any = {};
-    if (this.name) payload.name = this.name;
+    if (this.name.trim()) payload.name = this.name.trim();
     if (this.format) payload.format = this.format;
-    this.http.patch(
-      `${this.API}/${this.tournament!.id}`,
-      payload
-    ).subscribe(res => {
-      this.modalCtrl.dismiss(res);
-    });
+
+    this.isSaving = true;
+    this.errorMessage = '';
+
+    this.api.updateTournament(this.tournament!.id, payload)
+      .pipe(finalize(() => {
+        this.isSaving = false;
+      }))
+      .subscribe({
+        next: res => {
+          this.modalCtrl.dismiss(res);
+        },
+        error: () => {
+          this.errorMessage = 'Unable to update the tournament right now.';
+        },
+      });
   }
-
-
 }

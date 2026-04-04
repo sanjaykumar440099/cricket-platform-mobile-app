@@ -1,12 +1,67 @@
-<ion-content class="ion-padding">
-  <div class="login-card">
-    <h2>Scorer Login</h2>
+<ion-content [fullscreen]="true">
+  <div class="app-page-shell login-shell">
+    <section class="login-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          Secure Match Control
+        </p>
+        <h1>Welcome back to your scoring desk.</h1>
+        <p>
+          Sign in as an admin or scorer to manage tournaments, teams, live match control, and subscription-ready match operations.
+        </p>
 
-    <ion-input placeholder="Email" [(ngModel)]="email"></ion-input>
-    <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
+        <div class="trust-row">
+          <span class="info-pill">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            AI-ready live commentary
+          </span>
+          <span class="info-pill">
+            <ion-icon name="radio-outline"></ion-icon>
+            Stadium-style live screen
+          </span>
+        </div>
+      </div>
 
-    <ion-button expand="block" (click)="login()">
-      Login
-    </ion-button>
+      <div class="login-card glass-panel">
+        <p class="eyebrow">
+          <ion-icon name="log-in-outline"></ion-icon>
+          Admin & Scorer Login
+        </p>
+        <h2>Access your workspace</h2>
+        <p class="subcopy">Use your backend account to continue into the control console.</p>
+
+        <div class="field-group">
+          <label>Email address</label>
+          <ion-input
+            type="email"
+            fill="outline"
+            placeholder="you@example.com"
+            [(ngModel)]="email">
+          </ion-input>
+        </div>
+
+        <div class="field-group">
+          <label>Password</label>
+          <ion-input
+            type="password"
+            fill="outline"
+            placeholder="Enter your password"
+            [(ngModel)]="password">
+          </ion-input>
+        </div>
+
+        <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+        <ion-button expand="block" size="large" [disabled]="isSubmitting || !email || !password" (click)="login()">
+          {{ isSubmitting ? 'Signing in...' : 'Login to Dashboard' }}
+          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+        </ion-button>
+
+        <ion-button expand="block" fill="clear" (click)="go('/home')">
+          Continue to public preview
+        </ion-button>
+      </div>
+    </section>
   </div>
 </ion-content>

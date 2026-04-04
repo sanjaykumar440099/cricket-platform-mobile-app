@@ -1,9 +1,9 @@
 <ion-header translucent>
-  <ion-toolbar class="toolbar-dark">
+  <ion-toolbar class="stadium-toolbar">
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Stadium</ion-title>
+    <ion-title>Live Centre</ion-title>
     <ion-buttons slot="end">
       <ion-button fill="clear">
         <ion-icon name="share-outline"></ion-icon>
@@ -12,51 +12,146 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen class="bg-dark">
-  <div class="match-card">
-    <div class="teams-row">
-      <div class="team">
-        <div class="logo">H</div>
-        <div class="info">
-          <div class="name">{{ home.name }}</div>
-          <div class="score">{{ home.score }}</div>
+<ion-content fullscreen class="stadium-shell">
+  <div class="app-page-shell">
+    <section *ngIf="isLoading" class="status-panel glass-panel">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading live centre</h3>
+      <p>Connecting the stadium screen to the real public match feed.</p>
+    </section>
+
+    <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+      <h3>Couldn’t load live match</h3>
+      <p>{{ errorMessage }}</p>
+      <ion-button fill="outline" (click)="reload()">Try again</ion-button>
+    </section>
+
+    <section *ngIf="!isLoading && !hasLiveMatch && !errorMessage" class="status-panel glass-panel">
+      <h3>No live match is active</h3>
+      <p>The stadium screen is connected, but the backend does not have an active live match yet.</p>
+      <ion-button fill="outline" (click)="reload()">Refresh feed</ion-button>
+    </section>
+
+    <ng-container *ngIf="!isLoading && hasLiveMatch">
+      <section class="hero-scoreboard">
+        <div class="hero-top">
+          <div>
+            <p class="eyebrow">
+              <ion-icon name="radio-outline"></ion-icon>
+              Stadium Mode
+            </p>
+            <h1>{{ status }}</h1>
+            <p class="venue">{{ venue }}</p>
+          </div>
+          <span class="live-pill">
+            <span class="live-dot"></span>
+            Broadcasting
+          </span>
         </div>
-      </div>
 
-      <div class="vs">VS</div>
+        <div class="score-stack">
+          <article class="team-panel batting">
+            <div class="team-head">
+              <div class="logo">{{ home.short }}</div>
+              <div>
+                <div class="name">{{ home.name }}</div>
+                <div class="descriptor">{{ home.descriptor }}</div>
+              </div>
+            </div>
+            <div class="score-line">{{ home.short }}</div>
+          </article>
 
-      <div class="team">
-        <div class="logo">A</div>
-        <div class="info">
-          <div class="name">{{ away.name }}</div>
-          <div class="score">{{ away.score }}</div>
+          <article class="team-panel">
+            <div class="team-head">
+              <div class="logo alt">{{ away.short }}</div>
+              <div>
+                <div class="name">{{ away.name }}</div>
+                <div class="descriptor">{{ away.descriptor }}</div>
+              </div>
+            </div>
+            <div class="score-line accent">{{ away.short }}</div>
+          </article>
         </div>
-      </div>
-    </div>
 
-    <div class="match-meta">
-      <div class="status">{{ status }}</div>
-      <div class="venue">{{ venue }}</div>
-    </div>
-
-    <div class="progress">
-      <div class="bar"><div class="fill" style="width:60%"></div></div>
-      <div class="progress-label">Powerplay • 12/20 overs</div>
-    </div>
-
-    <div class="players">
-      <div class="player" *ngFor="let p of highlights">
-        <div class="avatar">{{ p.name.charAt(0) }}</div>
-        <div class="pinfo">
-          <div class="pname">{{ p.name }}</div>
-          <div class="pstat">{{ p.stat }} runs</div>
+        <div class="innings-focus">
+          <span class="focus-label">Current innings</span>
+          <strong>{{ currentScore }}</strong>
+          <p>{{ currentOvers }} · {{ scoreContext }}</p>
         </div>
-      </div>
-    </div>
 
-    <div class="actions">
-      <ion-button color="light" fill="clear">Scorecard</ion-button>
-      <ion-button color="primary">Follow</ion-button>
-    </div>
+        <div class="fact-row">
+          <div class="fact-chip" *ngFor="let fact of matchFacts">
+            <span>{{ fact.label }}</span>
+            <strong>{{ fact.value }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel recent-over-panel">
+        <div class="panel-head">
+          <h2 class="app-section-title">Recent Over</h2>
+          <span class="panel-tag">{{ recentOverLabel }}</span>
+        </div>
+
+        <div class="over-balls">
+          <span
+            *ngFor="let item of recentOver"
+            class="ball-chip"
+            [ngClass]="ballClass(item.kind)">
+            {{ item.label }}
+          </span>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <article class="panel metric-panel" *ngFor="let item of summaryStats">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+        </article>
+      </section>
+
+      <section class="dual-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="app-section-title">Match Signals</h2>
+            <ion-icon name="analytics-outline"></ion-icon>
+          </div>
+
+          <div class="players">
+            <div class="player" *ngFor="let signal of signals">
+              <div class="avatar">{{ signal.label.charAt(0) }}</div>
+              <div class="pinfo">
+                <div class="pname">{{ signal.value }}</div>
+                <div class="pstat">{{ signal.label }} · {{ signal.detail }}</div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel commentary-panel">
+          <div class="panel-head">
+            <h2 class="app-section-title">Live Commentary</h2>
+            <ion-icon name="sparkles-outline"></ion-icon>
+          </div>
+
+          <div class="commentary-feed">
+            <div class="feed-item" *ngFor="let item of commentary">
+              <div class="timestamp">{{ item.over }}</div>
+              <p>{{ item.text }}</p>
+            </div>
+
+            <div class="feed-item empty-feed" *ngIf="commentary.length === 0">
+              <div class="timestamp">-</div>
+              <p>AI commentary will appear here once a scored ball is stored for the live match.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <div class="actions">
+        <ion-button fill="outline" color="light" (click)="reload()">Refresh Feed</ion-button>
+        <ion-button [disabled]="!matchId">Match {{ matchId ? (matchId | slice:0:8) : 'Offline' }}</ion-button>
+      </div>
+    </ng-container>
   </div>
 </ion-content>

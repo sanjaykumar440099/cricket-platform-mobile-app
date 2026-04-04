@@ -27,8 +27,13 @@
   <ion-button
     expand="block"
     class="ion-margin-top"
-    (click)="create()">
-    Create Team
+    (click)="create()"
+    [disabled]="!name.trim() || isSaving">
+    {{ isSaving ? 'Creating...' : 'Create Team' }}
   </ion-button>
+
+  <ion-note *ngIf="errorMessage" color="danger" class="inline-error">
+    {{ errorMessage }}
+  </ion-note>
 
 </ion-content>

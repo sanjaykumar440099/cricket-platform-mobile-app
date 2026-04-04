@@ -1,8 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { IonicModule, ModalController, AlertController } from '@ionic/angular';
+import { finalize } from 'rxjs';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { CricketApiService } from '../../../core/api/cricket-api.service';
 
 @Component({
     standalone: true,
@@ -12,30 +13,39 @@ import { CommonModule } from '@angular/common';
 
 })
 export class CreateTeamModalComponent {
-
     @Input() tournamentId!: string;
 
     name = '';
     shortName = '';
-
-    private API = 'http://localhost:3000/api/admin/tournaments';
+    isSaving = false;
+    errorMessage = '';
 
     constructor(
         private modalCtrl: ModalController,
-        private http: HttpClient,
+        private readonly api: CricketApiService,
     ) { }
 
     create() {
-        if (!this.name) return;
+        if (!this.name.trim() || this.isSaving) return;
 
-        this.http.post(
-            `${this.API}/${this.tournamentId}/teams`,
+        this.isSaving = true;
+        this.errorMessage = '';
+
+        this.api.createTeam(
+            this.tournamentId,
             {
-                name: this.name,
-                shortName: this.shortName,
+                name: this.name.trim(),
+                shortName: this.shortName.trim() || undefined,
             },
-        ).subscribe(res => {
-            this.modalCtrl.dismiss(res);
+        ).pipe(finalize(() => {
+            this.isSaving = false;
+        })).subscribe({
+            next: res => {
+                this.modalCtrl.dismiss(res);
+            },
+            error: () => {
+                this.errorMessage = 'Unable to create the team right now.';
+            },
         });
     }
 

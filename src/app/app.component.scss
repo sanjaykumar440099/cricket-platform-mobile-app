@@ -1,0 +1,98 @@
+.menu-shell {
+  --padding-top: 18px;
+  --padding-bottom: 18px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.menu-hero {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: 28px;
+  background: var(--app-accent-gradient);
+  color: #f6fbff;
+  box-shadow: var(--app-shadow);
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.brand-copy h2,
+.theme-row h3 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.brand-copy p:last-child {
+  margin: 0;
+  color: rgba(246, 251, 255, 0.82);
+  line-height: 1.45;
+}
+
+.menu-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+}
+
+.menu-item {
+  --background: var(--app-surface-strong);
+  --border-radius: 20px;
+  --padding-start: 16px;
+  --inner-padding-end: 14px;
+  --min-height: 72px;
+  border: 1px solid var(--app-stroke);
+  box-shadow: var(--app-shadow);
+}
+
+.menu-item ion-icon {
+  color: var(--ion-color-secondary);
+  font-size: 1.2rem;
+}
+
+.menu-item ion-label strong {
+  display: block;
+  color: var(--app-text);
+  font-size: 0.96rem;
+}
+
+.menu-item ion-label p {
+  margin: 4px 0 0;
+  color: var(--app-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.menu-footer {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.menu-footnote {
+  margin-top: 12px;
+  color: var(--app-muted);
+  line-height: 1.45;
+}

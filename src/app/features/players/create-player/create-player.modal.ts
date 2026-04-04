@@ -1,8 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { IonicModule, ModalController, AlertController } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CricketApiService } from '../../../core/api/cricket-api.service';
 
 @Component({
   standalone: true,
@@ -11,30 +12,39 @@ import { FormsModule } from '@angular/forms';
     imports: [CommonModule, FormsModule, IonicModule]
 })
 export class CreatePlayerModalComponent {
-
   @Input() teamId!: string;
 
   name = '';
   role = '';
-
-  private API = 'http://localhost:3000/api/admin';
+  isSaving = false;
+  errorMessage = '';
 
   constructor(
     private modalCtrl: ModalController,
-    private http: HttpClient,
+    private readonly api: CricketApiService,
   ) {}
 
   create() {
-    if (!this.name) return;
+    if (!this.name.trim() || this.isSaving) return;
 
-    this.http.post(
-      `${this.API}/teams/${this.teamId}/players`,
+    this.isSaving = true;
+    this.errorMessage = '';
+
+    this.api.createPlayer(
+      this.teamId,
       {
-        name: this.name,
-        role: this.role,
+        name: this.name.trim(),
+        role: this.role.trim() || undefined,
       },
-    ).subscribe(res => {
-      this.modalCtrl.dismiss(res);
+    ).pipe(finalize(() => {
+      this.isSaving = false;
+    })).subscribe({
+      next: res => {
+        this.modalCtrl.dismiss(res);
+      },
+      error: () => {
+        this.errorMessage = 'Unable to add the player right now.';
+      },
     });
   }
 

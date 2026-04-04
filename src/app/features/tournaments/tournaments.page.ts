@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, AlertController } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+import { CricketApiService } from '../../core/api/cricket-api.service';
+import { TournamentSummary } from '../../shared/models/api.models';
 import { CreateTournamentModalPage } from './create-tournament-modal/create-tournament-modal.page';
 
 @Component({
@@ -14,12 +16,12 @@ import { CreateTournamentModalPage } from './create-tournament-modal/create-tour
   imports: [CommonModule, FormsModule, IonicModule],
 })
 export class TournamentsPage implements OnInit {
-
-  tournaments: any[] = [];
-  private API = 'http://localhost:3000/api/admin/tournaments';
+  tournaments: TournamentSummary[] = [];
+  isLoading = false;
+  errorMessage = '';
 
   constructor(
-    private http: HttpClient,
+    private readonly api: CricketApiService,
     private router: Router,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController
@@ -32,9 +34,21 @@ export class TournamentsPage implements OnInit {
   /* -------------------- LOAD -------------------- */
 
   load() {
-    this.http.get<any[]>(this.API).subscribe({
-      next: res => this.tournaments = res,
-      error: err => console.error('Failed to load tournaments', err)
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.api.getTournaments()
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
+      .subscribe({
+        next: res => {
+          this.tournaments = res;
+        },
+        error: err => {
+          console.error('Failed to load tournaments', err);
+          this.errorMessage = 'Unable to load tournaments from the API right now.';
+        }
     });
   }
 
@@ -104,7 +118,7 @@ export class TournamentsPage implements OnInit {
   }
 
   deleteTournament(id: string) {
-    this.http.delete(`${this.API}/${id}`).subscribe({
+    this.api.deleteTournament(id).subscribe({
       next: () => {
         this.tournaments = this.tournaments.filter(t => t.id !== id);
         this.load();
