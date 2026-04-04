@@ -134,4 +134,12 @@ export class TournamentsPage implements OnInit {
       tournament.id,
     ]);
   }
+
+  goToMatches(tournament: TournamentSummary) {
+    this.router.navigate([
+      '/admin/tournaments',
+      tournament.id,
+      'matches',
+    ]);
+  }
 }

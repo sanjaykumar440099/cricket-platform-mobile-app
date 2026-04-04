@@ -30,13 +30,16 @@
 }
 
 .stat-grid,
-.action-grid {
+.action-grid,
+.schedule-grid {
   display: grid;
   gap: 14px;
 }
 
 .stat-card,
-.action-card {
+.action-card,
+.schedule-panel,
+.upcoming-panel {
   padding: 18px;
   border-radius: 24px;
 }
@@ -71,6 +74,121 @@
 .section-stack {
   display: grid;
   gap: 12px;
+}
+
+.fixture-list,
+.upcoming-meta {
+  display: grid;
+  gap: 12px;
+}
+
+.fixture-card,
+.upcoming-card,
+.empty-schedule {
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--app-stroke);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.fixture-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.fixture-status,
+.fixture-time,
+.upcoming-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.fixture-status {
+  background: rgba(15, 138, 95, 0.12);
+  color: var(--ion-color-primary);
+}
+
+.status-live {
+  background: rgba(239, 107, 82, 0.16);
+  color: #b94f3b;
+}
+
+.status-completed {
+  background: rgba(24, 52, 79, 0.14);
+  color: #21486d;
+}
+
+.fixture-time {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--app-muted);
+}
+
+.fixture-card h3,
+.upcoming-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--app-text);
+}
+
+.fixture-card p,
+.upcoming-card p,
+.empty-schedule {
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.5;
+}
+
+.fixture-meta {
+  display: inline-flex;
+  margin-top: 12px;
+  color: var(--ion-color-primary);
+  font-weight: 800;
+}
+
+.upcoming-card {
+  display: grid;
+  gap: 14px;
+}
+
+.upcoming-kicker {
+  justify-self: start;
+  background: rgba(217, 143, 43, 0.18);
+  color: #9a5b06;
+}
+
+.upcoming-chip {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid var(--app-stroke);
+}
+
+.upcoming-chip span,
+.upcoming-chip strong {
+  display: block;
+}
+
+.upcoming-chip span {
+  color: var(--app-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.upcoming-chip strong {
+  margin-top: 8px;
+  color: var(--app-text);
+  line-height: 1.4;
 }
 
 .action-card {
@@ -138,5 +256,10 @@
 
   .action-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .schedule-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    align-items: start;
   }
 }

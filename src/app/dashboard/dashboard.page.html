@@ -78,6 +78,69 @@
       </div>
     </section>
 
+    <section class="schedule-grid" *ngIf="!isLoading && !errorMessage">
+      <article class="schedule-panel glass-panel">
+        <div class="section-head">
+          <div>
+            <h2 class="app-section-title">Today’s Matches</h2>
+            <p class="app-section-copy">All fixtures scheduled for today in your local device time.</p>
+          </div>
+        </div>
+
+        <div class="fixture-list" *ngIf="todayMatches.length > 0; else noTodayMatches">
+          <div class="fixture-card" *ngFor="let match of todayMatches">
+            <div class="fixture-top">
+              <span class="fixture-status" [ngClass]="'status-' + match.statusTone">{{ match.status }}</span>
+              <span class="fixture-time">{{ match.startLabel }}</span>
+            </div>
+            <h3>{{ match.title }}</h3>
+            <p>{{ match.subtitle }}</p>
+            <span class="fixture-meta">{{ match.countdownLabel }}</span>
+          </div>
+        </div>
+
+        <ng-template #noTodayMatches>
+          <div class="empty-schedule">
+            No matches are scheduled for today yet.
+          </div>
+        </ng-template>
+      </article>
+
+      <article class="upcoming-panel glass-panel">
+        <div class="section-head">
+          <div>
+            <h2 class="app-section-title">Next Upcoming Match</h2>
+            <p class="app-section-copy">The closest scheduled fixture with the remaining time to start.</p>
+          </div>
+        </div>
+
+        <div *ngIf="upcomingMatch; else noUpcomingMatch" class="upcoming-card">
+          <span class="upcoming-kicker">{{ upcomingMatch.countdownLabel }}</span>
+          <h3>{{ upcomingMatch.title }}</h3>
+          <p>{{ upcomingMatch.subtitle }}</p>
+
+          <div class="upcoming-meta">
+            <div class="upcoming-chip">
+              <span>Scheduled start</span>
+              <strong>{{ upcomingMatch.startLabel }}</strong>
+            </div>
+            <div class="upcoming-chip">
+              <span>Scoring window</span>
+              <strong>{{ upcomingMatch.scoringWindowLabel }}</strong>
+            </div>
+          </div>
+
+          <ion-button fill="outline" (click)="openScorerDesk()">Open Scorer Desk</ion-button>
+        </div>
+
+        <ng-template #noUpcomingMatch>
+          <div class="empty-schedule">
+            No upcoming matches are scheduled right now.
+          </div>
+        </ng-template>
+      </article>
+    </section>
+
     <section class="insight-panel glass-panel" *ngIf="insights.length > 0">
       <p class="eyebrow">
         <ion-icon name="sparkles-outline"></ion-icon>

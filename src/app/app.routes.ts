@@ -18,6 +18,12 @@ export const routes: Routes = [
       import('./features/live/stadium/stadium.module')
         .then(m => m.StadiumPageModule),
   },
+  {
+    path: 'scorer/matchdesk',
+    loadComponent: () =>
+      import('./features/scoring/matchdesk/matchdesk.page')
+        .then(m => m.MatchdeskPage),
+  },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: 'admin/dashboard',
@@ -30,6 +36,12 @@ export const routes: Routes = [
   {
     path: 'admin/teams/:id',
     loadComponent: () => import('./features/teams/teams.page').then( m => m.TeamsPage)
+  },
+  {
+    path: 'admin/tournaments/:tournamentId/matches',
+    loadComponent: () =>
+      import('./features/matches/tournament-matches.page')
+        .then(m => m.TournamentMatchesPage),
   },
   {
     path: 'admin/teams/:teamId/players',

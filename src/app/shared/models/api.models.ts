@@ -1,3 +1,6 @@
+export type MatchStatus = 'scheduled' | 'live' | 'completed';
+export type BallExtraType = 'wide' | 'no-ball' | 'bye' | 'leg-bye' | null;
+
 export interface SubscriptionPlan {
   plan: 'free' | 'basic' | 'premium';
   price: number;
@@ -28,16 +31,106 @@ export interface PlayerSummary {
   role?: string | null;
 }
 
+export interface TournamentLite {
+  id: string;
+  name: string;
+  format: 'T20' | 'ODI' | 'TEST';
+}
+
 export interface MatchSummary {
   id: string;
   tournamentId?: string | null;
   teamAId: string;
   teamBId: string;
   oversLimit: number;
-  status: 'scheduled' | 'live' | 'completed';
+  status: MatchStatus;
   winnerTeamId?: string | null;
   startTime?: string | null;
   createdAt?: string;
+  isTie?: boolean;
+  isNoResult?: boolean;
+  teamA?: TeamSummary | null;
+  teamB?: TeamSummary | null;
+  winnerTeam?: TeamSummary | null;
+  tournament?: TournamentLite | null;
+}
+
+export interface InningsSummary {
+  id: string;
+  matchId: string;
+  battingTeamId: string;
+  bowlingTeamId: string;
+  inningsNumber: number;
+  isCompleted: boolean;
+  isSuperOver?: boolean;
+  createdAt?: string;
+}
+
+export interface ScoreSummary {
+  runs?: number;
+  wickets?: number;
+  overs?: string;
+  runRate?: number;
+}
+
+export interface LiveStateSummary {
+  totalRuns?: number;
+  wickets?: number;
+  completedOvers?: number;
+  ballsInOver?: number;
+  strikerId?: string;
+  nonStrikerId?: string;
+  currentBowlerId?: string;
+  isCompleted?: boolean;
+  isFreeHit?: boolean;
+  powerplayPhase?: string | null;
+  maxFieldersOutside?: number;
+  isPowerplay?: boolean;
+}
+
+export interface LastBallSummary {
+  overNumber?: number;
+  ballNumber?: number;
+  runsOffBat?: number;
+  extras?: number;
+  extraType?: BallExtraType;
+  isWicket?: boolean;
+  dismissedPlayerId?: string;
+}
+
+export interface CreateInningsPayload {
+  matchId: string;
+  battingTeamId: string;
+  bowlingTeamId: string;
+  inningsNumber: number;
+  isSuperOver?: boolean;
+}
+
+export interface CreateBallPayload {
+  inningsId: string;
+  overNumber: number;
+  ballNumber: number;
+  strikerId: string;
+  nonStrikerId: string;
+  bowlerId: string;
+  runsOffBat: number;
+  extras: number;
+  extraType: BallExtraType;
+  isWicket: boolean;
+  dismissedPlayerId?: string;
+  fieldersOutsideCircle: number;
+}
+
+export interface MatchCompletionPayload {
+  winnerTeamId?: string;
+  isTie?: boolean;
+  isNoResult?: boolean;
+}
+
+export interface BallSubmissionResult {
+  score?: ScoreSummary | null;
+  state?: LiveStateSummary | null;
+  commentary?: CommentaryEntry | null;
 }
 
 export interface TournamentSummary {
@@ -72,7 +165,7 @@ export interface PublicLiveMatchDetail {
   match?: {
     id: string;
     tournamentId?: string | null;
-    status: 'scheduled' | 'live' | 'completed';
+    status: MatchStatus;
     oversLimit: number;
     startTime?: string | null;
     winnerTeamId?: string | null;
@@ -80,45 +173,16 @@ export interface PublicLiveMatchDetail {
     teamB?: TeamSummary | null;
     winnerTeam?: TeamSummary | null;
   } | null;
-  score?: {
-    runs?: number;
-    wickets?: number;
-    overs?: string;
-    runRate?: number;
-  } | null;
-  state?: {
-    totalRuns?: number;
-    wickets?: number;
-    completedOvers?: number;
-    ballsInOver?: number;
-  } | null;
-  lastBall?: {
-    overNumber?: number;
-    ballNumber?: number;
-    runsOffBat?: number;
-    extras?: number;
-    extraType?: string | null;
-    isWicket?: boolean;
-  } | null;
+  score?: ScoreSummary | null;
+  state?: LiveStateSummary | null;
+  lastBall?: LastBallSummary | null;
   commentary?: CommentaryEntry | null;
   recentEvents?: Array<{
     eventId: number;
     timestamp: number;
     payload?: {
-      state?: {
-        totalRuns?: number;
-        wickets?: number;
-        completedOvers?: number;
-        ballsInOver?: number;
-      };
-      lastBall?: {
-        overNumber?: number;
-        ballNumber?: number;
-        runsOffBat?: number;
-        extras?: number;
-        extraType?: string | null;
-        isWicket?: boolean;
-      };
+      state?: LiveStateSummary;
+      lastBall?: LastBallSummary;
     };
   }>;
   lastEventId?: number | null;

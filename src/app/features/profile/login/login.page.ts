@@ -43,7 +43,7 @@ export class LoginPage {
         if (user.role === 'admin') {
           this.router.navigate(['/admin/dashboard']);
         } else if (user.role === 'scorer') {
-          this.router.navigate(['/live/stadium']);
+          this.router.navigate(['/scorer/matchdesk']);
         } else {
           this.router.navigate(['/home']);
         }

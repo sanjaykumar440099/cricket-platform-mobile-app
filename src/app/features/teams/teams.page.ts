@@ -76,4 +76,12 @@ export class TeamsPage implements OnInit {
     ]);
   }
 
+  goToScheduler() {
+    this.router.navigate([
+      '/admin/tournaments',
+      this.tournamentId,
+      'matches',
+    ]);
+  }
+
 }

@@ -1,0 +1,485 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Scorer Matchdesk</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="loadMatches(selectedMatchId || undefined)">
+        Refresh
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="app-page-shell matchdesk-shell">
+    <section class="hero-panel glass-panel">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="radio-outline"></ion-icon>
+          Pro Scoring Console
+        </p>
+        <h1>Run live scoring, innings control, and match closure from one polished desk.</h1>
+        <p class="hero-copy">
+          This screen is wired to the real match, innings, players, commentary, and ball-scoring APIs so scorers can operate live fixtures cleanly.
+        </p>
+      </div>
+
+      <div class="hero-controls">
+        <ion-item class="select-item" lines="none">
+          <ion-label position="stacked">Select match</ion-label>
+          <ion-select
+            interface="popover"
+            [(ngModel)]="selectedMatchId"
+            name="selectedMatchId"
+            (ionChange)="onMatchSelectionChange()">
+            <ion-select-option *ngFor="let match of matches" [value]="match.id">
+              {{ match.teamA?.name || 'Team A' }} vs {{ match.teamB?.name || 'Team B' }} · {{ statusLabel(match.status) }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-button fill="outline" (click)="loadMatches(selectedMatchId || undefined)">
+          Refresh desk
+        </ion-button>
+      </div>
+    </section>
+
+    <section *ngIf="isLoadingMatches" class="status-panel glass-panel">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading matches</h3>
+      <p>Pulling the latest fixtures from the backend.</p>
+    </section>
+
+    <section *ngIf="!isLoadingMatches && pageError" class="status-panel glass-panel error-panel">
+      <h3>Couldn’t load matches</h3>
+      <p>{{ pageError }}</p>
+      <ion-button fill="outline" (click)="loadMatches()">Try again</ion-button>
+    </section>
+
+    <section *ngIf="!isLoadingMatches && !pageError && matches.length === 0" class="status-panel glass-panel">
+      <h3>No matches available yet</h3>
+      <p>Schedule or create a match first, then come back here to start live scoring.</p>
+      <ion-button fill="outline" routerLink="/admin/tournaments">Open Tournament Desk</ion-button>
+    </section>
+
+    <ng-container *ngIf="selectedMatch">
+      <section class="match-strip">
+        <button
+          type="button"
+          class="match-card glass-panel"
+          *ngFor="let match of matches"
+          [class.active]="match.id === selectedMatchId"
+          (click)="chooseMatch(match.id)">
+          <span class="match-status">{{ statusLabel(match.status) }}</span>
+          <strong>{{ teamShort(match.teamA) }} vs {{ teamShort(match.teamB) }}</strong>
+          <span>{{ match.teamA?.name || 'Team A' }} vs {{ match.teamB?.name || 'Team B' }}</span>
+        </button>
+      </section>
+
+      <section *ngIf="isLoadingDesk" class="status-panel glass-panel">
+        <ion-spinner name="crescent"></ion-spinner>
+        <h3>Loading match desk</h3>
+        <p>Syncing squads, innings, score state, and commentary.</p>
+      </section>
+
+      <section *ngIf="!isLoadingDesk && deskError" class="status-panel glass-panel error-panel">
+        <h3>Couldn’t load this match</h3>
+        <p>{{ deskError }}</p>
+        <ion-button fill="outline" (click)="loadMatchDesk(selectedMatch.id)">Retry match load</ion-button>
+      </section>
+
+      <ng-container *ngIf="!isLoadingDesk && !deskError">
+        <section class="scoreboard-panel glass-panel">
+          <div class="scoreboard-head">
+            <div>
+              <p class="eyebrow">
+                <ion-icon name="flash-outline"></ion-icon>
+                Match Live State
+              </p>
+              <h2>{{ selectedMatch.teamA?.name || 'Team A' }} vs {{ selectedMatch.teamB?.name || 'Team B' }}</h2>
+              <p class="scoreboard-copy">
+                {{ activeInningsLabel() }} · {{ powerplayLabel() }} · {{ selectedMatch.oversLimit }} overs
+              </p>
+            </div>
+
+            <div class="scoreboard-actions">
+              <ion-button
+                *ngIf="selectedMatch.status === 'scheduled'"
+                (click)="startSelectedMatch()"
+                [disabled]="isStartingMatch || !canStartSelectedMatch()">
+                {{ isStartingMatch ? 'Starting...' : (canStartSelectedMatch() ? 'Start Match' : 'Locked Until Window Opens') }}
+              </ion-button>
+
+              <ion-button
+                *ngIf="canCreateInnings()"
+                fill="outline"
+                (click)="createInnings()"
+                [disabled]="isCreatingInnings">
+                {{ isCreatingInnings ? 'Creating...' : 'Create Innings' }}
+              </ion-button>
+
+              <ion-button
+                *ngIf="canScoreBall()"
+                fill="outline"
+                color="light"
+                (click)="endCurrentInnings()"
+                [disabled]="isEndingInnings">
+                {{ isEndingInnings ? 'Ending...' : 'End Innings' }}
+              </ion-button>
+            </div>
+          </div>
+
+          <div class="score-grid">
+            <article class="team-score team-score-primary">
+              <div class="team-code">{{ teamShort(activeBattingTeam()) }}</div>
+              <div>
+                <div class="team-name">{{ activeBattingTeam()?.name || selectedMatch.teamA?.name || 'Batting Team' }}</div>
+                <div class="team-note">Batting now</div>
+              </div>
+            </article>
+
+            <article class="score-kpi">
+              <span>Score</span>
+              <strong>{{ scoreLine() }}</strong>
+              <small>{{ oversLine() }} ov · RR {{ runRateLine() }}</small>
+            </article>
+
+            <article class="team-score">
+              <div class="team-code alt">{{ teamShort(activeBowlingTeam()) }}</div>
+              <div>
+                <div class="team-name">{{ activeBowlingTeam()?.name || selectedMatch.teamB?.name || 'Bowling Team' }}</div>
+                <div class="team-note">Bowling side</div>
+              </div>
+            </article>
+          </div>
+
+          <div class="meta-row">
+            <div class="meta-chip">
+              <span>Status</span>
+              <strong>{{ statusLabel(selectedMatch.status) }}</strong>
+            </div>
+            <div class="meta-chip">
+              <span>Current innings</span>
+              <strong>{{ activeInnings?.inningsNumber || inningsSetup.inningsNumber }}</strong>
+            </div>
+            <div class="meta-chip">
+              <span>Recent over</span>
+              <strong>{{ recentBalls.length ? recentBalls.length + ' balls' : 'Waiting' }}</strong>
+            </div>
+          </div>
+
+          <div class="schedule-note" *ngIf="selectedMatch.status === 'scheduled'">
+            {{ startWindowMessage() }}
+          </div>
+        </section>
+
+        <section class="desk-grid">
+          <div class="desk-stack">
+            <article class="panel" *ngIf="canCreateInnings()">
+              <div class="panel-head">
+                <div>
+                  <h2 class="app-section-title">Innings Setup</h2>
+                  <p class="app-section-copy">Choose the batting order for the next innings.</p>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <ion-item class="select-item" lines="none">
+                  <ion-label position="stacked">Batting team</ion-label>
+                  <ion-select
+                    interface="popover"
+                    [(ngModel)]="inningsSetup.battingTeamId"
+                    name="inningsBatting"
+                    (ionChange)="syncBowlingTeam()">
+                    <ion-select-option [value]="selectedMatch.teamAId">
+                      {{ selectedMatch.teamA?.name || 'Team A' }}
+                    </ion-select-option>
+                    <ion-select-option [value]="selectedMatch.teamBId">
+                      {{ selectedMatch.teamB?.name || 'Team B' }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+
+                <ion-item class="select-item" lines="none">
+                  <ion-label position="stacked">Bowling team</ion-label>
+                  <ion-input [value]="teamById(inningsSetup.bowlingTeamId)?.name || 'Auto selected'" readonly></ion-input>
+                </ion-item>
+              </div>
+
+              <ion-button expand="block" (click)="createInnings()" [disabled]="isCreatingInnings">
+                {{ isCreatingInnings ? 'Creating innings...' : 'Open innings for scoring' }}
+              </ion-button>
+            </article>
+
+            <article class="panel" *ngIf="canScoreBall()">
+              <div class="panel-head">
+                <div>
+                  <h2 class="app-section-title">Ball Entry</h2>
+                  <p class="app-section-copy">Score the next delivery with real players and live state.</p>
+                </div>
+                <span class="panel-tag">
+                  {{ ((liveDetail?.state?.completedOvers ?? 0) + 1) }}.{{ ((liveDetail?.state?.ballsInOver ?? 0) + 1) }}
+                </span>
+              </div>
+
+              <div class="form-grid">
+                <ion-item class="select-item" lines="none">
+                  <ion-label position="stacked">Striker</ion-label>
+                  <ion-select interface="popover" [(ngModel)]="ballForm.strikerId" name="strikerId">
+                    <ion-select-option *ngFor="let player of battingPlayers" [value]="player.id">
+                      {{ player.name }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+
+                <ion-item class="select-item" lines="none">
+                  <ion-label position="stacked">Non-striker</ion-label>
+                  <ion-select interface="popover" [(ngModel)]="ballForm.nonStrikerId" name="nonStrikerId">
+                    <ion-select-option *ngFor="let player of battingPlayers" [value]="player.id">
+                      {{ player.name }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+
+                <ion-item class="select-item" lines="none">
+                  <ion-label position="stacked">Bowler</ion-label>
+                  <ion-select interface="popover" [(ngModel)]="ballForm.bowlerId" name="bowlerId">
+                    <ion-select-option *ngFor="let player of bowlingPlayers" [value]="player.id">
+                      {{ player.name }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+
+                <ion-item class="select-item" lines="none">
+                  <ion-label position="stacked">Fielders outside circle</ion-label>
+                  <ion-select interface="popover" [(ngModel)]="ballForm.fieldersOutsideCircle" name="fieldersOutsideCircle">
+                    <ion-select-option *ngFor="let outside of fieldersOutsideOptions" [value]="outside">
+                      {{ outside }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </div>
+
+              <div class="score-picker">
+                <div>
+                  <h3>Bat runs</h3>
+                  <p>Choose the runs off the bat for this ball.</p>
+                </div>
+
+                <div class="chip-grid">
+                  <button
+                    type="button"
+                    class="score-chip"
+                    *ngFor="let run of runOptions"
+                    [class.active]="ballForm.runsOffBat === run.value"
+                    [class.boundary]="run.tone === 'boundary'"
+                    [class.six]="run.tone === 'six'"
+                    [disabled]="!canUseBatRuns()"
+                    (click)="setRun(run.value)">
+                    {{ run.label }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="score-picker">
+                <div>
+                  <h3>Extra type</h3>
+                  <p>Select the delivery type and extra scoring mode.</p>
+                </div>
+
+                <div class="chip-grid extras-grid">
+                  <button
+                    type="button"
+                    class="score-chip extra-chip"
+                    *ngFor="let option of extraOptions"
+                    [class.active]="ballForm.extraType === option.value"
+                    (click)="setExtraType(option.value)">
+                    <strong>{{ option.label }}</strong>
+                    <span>{{ option.note }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="score-picker">
+                <div>
+                  <h3>Extra runs</h3>
+                  <p>Use this for wides, no-balls, byes, or leg-byes.</p>
+                </div>
+
+                <div class="chip-grid">
+                  <button
+                    type="button"
+                    class="score-chip"
+                    *ngFor="let extra of extrasRange"
+                    [class.active]="ballForm.extras === extra"
+                    [disabled]="ballForm.extraType === 'none'"
+                    (click)="ballForm.extras = extra">
+                    {{ extra }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="wicket-row">
+                <ion-button fill="outline" color="danger" (click)="toggleWicket()">
+                  {{ ballForm.isWicket ? 'Undo Wicket' : 'Mark Wicket' }}
+                </ion-button>
+
+                <ion-item class="select-item wicket-select" lines="none" *ngIf="ballForm.isWicket">
+                  <ion-label position="stacked">Dismissed player</ion-label>
+                  <ion-select interface="popover" [(ngModel)]="ballForm.dismissedPlayerId" name="dismissedPlayerId">
+                    <ion-select-option *ngFor="let player of battingPlayers" [value]="player.id">
+                      {{ player.name }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </div>
+
+              <ion-note *ngIf="ballError" color="danger" class="inline-error">
+                {{ ballError }}
+              </ion-note>
+
+              <ion-button expand="block" (click)="submitBall()" [disabled]="isSubmittingBall">
+                {{ isSubmittingBall ? 'Submitting ball...' : 'Add delivery to live score' }}
+              </ion-button>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="app-section-title">Match Result</h2>
+                  <p class="app-section-copy">Close the fixture once the innings are done.</p>
+                </div>
+              </div>
+
+              <div class="result-grid">
+                <button
+                  type="button"
+                  class="result-card"
+                  [class.active]="resultForm.winnerTeamId === selectedMatch.teamAId && !resultForm.isTie && !resultForm.isNoResult"
+                  (click)="setResultWinner(selectedMatch.teamAId)">
+                  <strong>{{ selectedMatch.teamA?.name || 'Team A' }}</strong>
+                  <span>Set as winner</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="result-card"
+                  [class.active]="resultForm.winnerTeamId === selectedMatch.teamBId && !resultForm.isTie && !resultForm.isNoResult"
+                  (click)="setResultWinner(selectedMatch.teamBId)">
+                  <strong>{{ selectedMatch.teamB?.name || 'Team B' }}</strong>
+                  <span>Set as winner</span>
+                </button>
+              </div>
+
+              <div class="result-toggles">
+                <ion-button fill="outline" (click)="markTie()" [color]="resultForm.isTie ? 'warning' : 'medium'">
+                  {{ resultForm.isTie ? 'Tie selected' : 'Mark as tie' }}
+                </ion-button>
+                <ion-button fill="outline" (click)="markNoResult()" [color]="resultForm.isNoResult ? 'warning' : 'medium'">
+                  {{ resultForm.isNoResult ? 'No result selected' : 'Mark no result' }}
+                </ion-button>
+              </div>
+
+              <ion-button
+                expand="block"
+                color="success"
+                (click)="completeSelectedMatch()"
+                [disabled]="isCompletingMatch || selectedMatch.status === 'completed'">
+                {{ isCompletingMatch ? 'Completing match...' : 'Complete match' }}
+              </ion-button>
+            </article>
+          </div>
+
+          <div class="desk-stack">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="app-section-title">Current State</h2>
+                  <p class="app-section-copy">Live state reflected from the scoring and public match APIs.</p>
+                </div>
+              </div>
+
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <span>Score</span>
+                  <strong>{{ scoreLine() }}</strong>
+                </div>
+                <div class="metric-card">
+                  <span>Overs</span>
+                  <strong>{{ oversLine() }}</strong>
+                </div>
+                <div class="metric-card">
+                  <span>Run rate</span>
+                  <strong>{{ runRateLine() }}</strong>
+                </div>
+                <div class="metric-card">
+                  <span>Powerplay</span>
+                  <strong>{{ powerplayLabel() }}</strong>
+                </div>
+              </div>
+
+              <div class="recent-row" *ngIf="recentBalls.length > 0">
+                <span
+                  *ngFor="let ball of recentBalls"
+                  class="recent-chip"
+                  [ngClass]="{
+                    'recent-boundary': ball.kind === 'boundary',
+                    'recent-wicket': ball.kind === 'wicket',
+                    'recent-highlight': ball.kind === 'highlight'
+                  }">
+                  {{ ball.label }}
+                </span>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="app-section-title">Squad Context</h2>
+                  <p class="app-section-copy">Live batting and bowling rosters for this innings.</p>
+                </div>
+              </div>
+
+              <div class="squad-grid">
+                <div class="squad-card">
+                  <span>Batting side</span>
+                  <strong>{{ activeBattingTeam()?.name || 'Waiting for innings' }}</strong>
+                  <small>{{ battingPlayers.length }} players available</small>
+                </div>
+                <div class="squad-card">
+                  <span>Bowling side</span>
+                  <strong>{{ activeBowlingTeam()?.name || 'Waiting for innings' }}</strong>
+                  <small>{{ bowlingPlayers.length }} players available</small>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel commentary-panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="app-section-title">Commentary Feed</h2>
+                  <p class="app-section-copy">Pulled from the backend commentary entries for this match.</p>
+                </div>
+              </div>
+
+              <div class="commentary-feed" *ngIf="commentaryFeed.length > 0; else emptyCommentary">
+                <div class="feed-item" *ngFor="let item of commentaryFeed">
+                  <div class="feed-over">{{ item.over }}</div>
+                  <p>{{ item.text }}</p>
+                </div>
+              </div>
+
+              <ng-template #emptyCommentary>
+                <div class="empty-commentary">
+                  Commentary will appear here after the first scored ball is saved.
+                </div>
+              </ng-template>
+            </article>
+          </div>
+        </section>
+      </ng-container>
+    </ng-container>
+  </div>
+</ion-content>

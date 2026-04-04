@@ -1,0 +1,168 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/tournaments"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Match Scheduler</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="goToScorerDesk()">Scorer Desk</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="app-page-shell scheduler-shell">
+    <section class="scheduler-hero glass-panel">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="calendar-outline"></ion-icon>
+          Tournament Scheduler
+        </p>
+        <h1>{{ tournament?.name || 'Tournament' }}</h1>
+        <p class="app-section-copy">
+          Schedule fixtures after teams and players are created. Scoring becomes available exactly one hour before the scheduled start time.
+        </p>
+      </div>
+
+      <div class="hero-actions">
+        <ion-button fill="outline" (click)="goToTeams()">Manage Teams</ion-button>
+        <ion-button (click)="goToScorerDesk()">Open Scorer Desk</ion-button>
+      </div>
+    </section>
+
+    <section *ngIf="isLoading" class="status-panel glass-panel">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading scheduler</h3>
+      <p>Fetching teams and existing fixtures for this tournament.</p>
+    </section>
+
+    <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+      <h3>Couldn’t load scheduler</h3>
+      <p>{{ errorMessage }}</p>
+      <ion-button fill="outline" (click)="loadScheduler()">Try again</ion-button>
+    </section>
+
+    <ng-container *ngIf="!isLoading && !errorMessage">
+      <section class="schedule-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="app-section-title">Create Fixture</h2>
+              <p class="app-section-copy">Select two different teams and a scheduled start time.</p>
+            </div>
+          </div>
+
+          <div *ngIf="teams.length < 2" class="status-panel">
+            <h3>Need at least two teams</h3>
+            <p>Create at least two teams inside this tournament before scheduling a fixture.</p>
+          </div>
+
+          <div *ngIf="teams.length >= 2" class="form-grid">
+            <ion-item class="select-item" lines="none">
+              <ion-label position="stacked">Team A</ion-label>
+              <ion-select interface="popover" [(ngModel)]="form.teamAId" name="teamAId">
+                <ion-select-option *ngFor="let team of teams" [value]="team.id">
+                  {{ team.name }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item class="select-item" lines="none">
+              <ion-label position="stacked">Team B</ion-label>
+              <ion-select interface="popover" [(ngModel)]="form.teamBId" name="teamBId">
+                <ion-select-option *ngFor="let team of teams" [value]="team.id">
+                  {{ team.name }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item class="select-item" lines="none">
+              <ion-label position="stacked">Overs</ion-label>
+              <ion-input
+                type="number"
+                min="1"
+                [(ngModel)]="form.oversLimit"
+                name="oversLimit">
+              </ion-input>
+            </ion-item>
+
+            <label class="native-input-card">
+              <span>Scheduled start</span>
+              <input
+                type="datetime-local"
+                [(ngModel)]="form.startAt"
+                name="startAt" />
+            </label>
+          </div>
+
+          <ion-note *ngIf="saveError" color="danger" class="inline-error">
+            {{ saveError }}
+          </ion-note>
+
+          <ion-button
+            expand="block"
+            (click)="scheduleMatch()"
+            [disabled]="!canSchedule() || isSaving">
+            {{ isSaving ? 'Scheduling...' : 'Schedule match' }}
+          </ion-button>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="app-section-title">Scoring Window</h2>
+              <p class="app-section-copy">Scorers can begin match operations one hour before the scheduled start.</p>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <strong>Example</strong>
+            <p>If a match is scheduled for 5:00 PM, scoring becomes available from 4:00 PM on the same day.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="app-section-title">Scheduled Matches</h2>
+            <p class="app-section-copy">These fixtures will appear in the scorer desk once they are created.</p>
+          </div>
+        </div>
+
+        <div *ngIf="matches.length === 0" class="status-panel">
+          <h3>No fixtures yet</h3>
+          <p>Schedule your first match here, then it will be available in the scorer desk.</p>
+        </div>
+
+        <div *ngIf="matches.length > 0" class="match-list">
+          <article class="fixture-card" *ngFor="let match of matches">
+            <div class="fixture-top">
+              <span class="status-pill">{{ statusLabel(match.status) }}</span>
+              <span class="format-pill">{{ match.oversLimit }} overs</span>
+            </div>
+
+            <div class="fixture-title">
+              {{ match.teamA?.name || 'Team A' }} vs {{ match.teamB?.name || 'Team B' }}
+            </div>
+
+            <div class="fixture-subtitle">
+              {{ teamShort(match.teamA) }} vs {{ teamShort(match.teamB) }}
+            </div>
+
+            <div class="fixture-meta">
+              <div class="meta-block">
+                <span>Scheduled start</span>
+                <strong>{{ formatMatchTime(match) }}</strong>
+              </div>
+              <div class="meta-block">
+                <span>Scoring opens</span>
+                <strong>{{ scoringOpensLabel(match) }}</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+  </div>
+</ion-content>

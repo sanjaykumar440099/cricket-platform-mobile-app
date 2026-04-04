@@ -49,6 +49,12 @@ export class AppComponent {
       route: '/live/stadium',
     },
     {
+      label: 'Scorer Desk',
+      note: 'Score live balls, control innings, and complete matches.',
+      icon: 'flash-outline',
+      route: '/scorer/matchdesk',
+    },
+    {
       label: 'Login',
       note: 'Admin and scorer sign-in for backend actions.',
       icon: 'log-in-outline',

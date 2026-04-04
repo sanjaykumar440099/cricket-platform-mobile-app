@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { CricketApiService } from '../core/api/cricket-api.service';
 import {
   DashboardSnapshot,
+  MatchSummary,
   SubscriptionSummary,
 } from '../shared/models/api.models';
 
@@ -16,6 +17,17 @@ interface DashboardStat {
   note: string;
 }
 
+interface DashboardFixture {
+  id: string;
+  title: string;
+  subtitle: string;
+  status: string;
+  statusTone: 'scheduled' | 'live' | 'completed';
+  startLabel: string;
+  scoringWindowLabel: string;
+  countdownLabel: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
@@ -23,11 +35,16 @@ interface DashboardStat {
   standalone: true,
   imports: [CommonModule, FormsModule, IonicModule],
 })
-export class DashboardPage implements OnInit {
+export class DashboardPage implements OnInit, OnDestroy {
   stats: DashboardStat[] = [];
   insights: string[] = [];
+  todayMatches: DashboardFixture[] = [];
+  upcomingMatch: DashboardFixture | null = null;
   isLoading = false;
   errorMessage = '';
+
+  private matches: MatchSummary[] = [];
+  private countdownTimerId: ReturnType<typeof setInterval> | null = null;
 
   readonly actionCards = [
     {
@@ -46,10 +63,10 @@ export class DashboardPage implements OnInit {
     },
     {
       title: 'Scorer Access',
-      copy: 'Test the scorer sign-in flow and mobile-first match control experience.',
-      icon: 'log-in-outline',
-      route: '/login',
-      cta: 'Go to login',
+      copy: 'Open the live scorer matchdesk with innings setup, ball entry, and result control.',
+      icon: 'flash-outline',
+      route: '/scorer/matchdesk',
+      cta: 'Open scorer desk',
     },
   ];
 
@@ -60,6 +77,13 @@ export class DashboardPage implements OnInit {
 
   ngOnInit() {
     this.loadDashboard();
+    this.startCountdownTicker();
+  }
+
+  ngOnDestroy() {
+    if (this.countdownTimerId) {
+      clearInterval(this.countdownTimerId);
+    }
   }
 
   go(path: string) {
@@ -75,22 +99,33 @@ export class DashboardPage implements OnInit {
       subscription: this.api.getMySubscription().pipe(
         catchError(() => of(null)),
       ),
+      matches: this.api.getMatches().pipe(
+        catchError(() => of([])),
+      ),
     }).pipe(
       finalize(() => {
         this.isLoading = false;
       }),
     ).subscribe({
-      next: ({ snapshot, subscription }) => {
+      next: ({ snapshot, subscription, matches }) => {
         this.stats = this.buildStats(snapshot, subscription);
         this.insights = this.buildInsights(snapshot, subscription);
+        this.matches = matches;
+        this.refreshMatchHighlights();
       },
       error: err => {
         console.error('Failed to load dashboard', err);
         this.stats = [];
         this.insights = [];
+        this.todayMatches = [];
+        this.upcomingMatch = null;
         this.errorMessage = 'Dashboard data could not be loaded from the API.';
       },
     });
+  }
+
+  openScorerDesk() {
+    this.router.navigate(['/scorer/matchdesk']);
   }
 
   private buildStats(
@@ -144,6 +179,143 @@ export class DashboardPage implements OnInit {
     insights.push(`The current admin account is on the ${this.toTitleCase(subscription?.plan ?? 'free')} plan.`);
 
     return insights;
+  }
+
+  private startCountdownTicker() {
+    this.countdownTimerId = setInterval(() => {
+      this.refreshMatchHighlights();
+    }, 60_000);
+  }
+
+  private refreshMatchHighlights() {
+    const now = new Date();
+
+    this.todayMatches = this.matches
+      .filter(match => this.isToday(match.startTime, now))
+      .sort((left, right) => this.sortByStartTime(left, right))
+      .map(match => this.toFixture(match, now));
+
+    this.upcomingMatch = this.matches
+      .filter(match => this.isUpcoming(match.startTime, now))
+      .sort((left, right) => this.sortByStartTime(left, right))[0]
+      ? this.toFixture(
+          this.matches
+            .filter(match => this.isUpcoming(match.startTime, now))
+            .sort((left, right) => this.sortByStartTime(left, right))[0],
+          now,
+        )
+      : null;
+  }
+
+  private toFixture(match: MatchSummary, now: Date): DashboardFixture {
+    const start = match.startTime ? new Date(match.startTime) : null;
+    const scoringWindow = start
+      ? new Date(start.getTime() - 60 * 60 * 1000)
+      : null;
+
+    return {
+      id: match.id,
+      title: `${match.teamA?.name || 'Team A'} vs ${match.teamB?.name || 'Team B'}`,
+      subtitle: `${this.teamShort(match)} · ${match.oversLimit} overs`,
+      status: this.toTitleCase(match.status),
+      statusTone: match.status,
+      startLabel: start ? this.formatDateTime(start) : 'Start time not set',
+      scoringWindowLabel: scoringWindow
+        ? `Scoring opens ${this.formatDateTime(scoringWindow)}`
+        : 'Scoring can start anytime',
+      countdownLabel: this.countdownForMatch(match, now),
+    };
+  }
+
+  private countdownForMatch(match: MatchSummary, now: Date) {
+    if (!match.startTime) {
+      return 'No countdown available';
+    }
+
+    const start = new Date(match.startTime);
+    const diffMs = start.getTime() - now.getTime();
+
+    if (match.status === 'live') {
+      return 'Live now';
+    }
+
+    if (match.status === 'completed') {
+      return 'Completed';
+    }
+
+    if (diffMs <= 0) {
+      return 'Scheduled time reached';
+    }
+
+    const totalMinutes = Math.floor(diffMs / 60_000);
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+    const minutes = totalMinutes % 60;
+
+    if (days > 0) {
+      return `Starts in ${days}d ${hours}h`;
+    }
+
+    if (hours > 0) {
+      return `Starts in ${hours}h ${minutes}m`;
+    }
+
+    return `Starts in ${minutes}m`;
+  }
+
+  private teamShort(match: MatchSummary) {
+    const teamAShort = match.teamA?.shortName
+      ?? this.toInitials(match.teamA?.name ?? 'Team A');
+    const teamBShort = match.teamB?.shortName
+      ?? this.toInitials(match.teamB?.name ?? 'Team B');
+
+    return `${teamAShort} vs ${teamBShort}`;
+  }
+
+  private toInitials(value: string) {
+    return value
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join('');
+  }
+
+  private isToday(startTime: string | null | undefined, now: Date) {
+    if (!startTime) {
+      return false;
+    }
+
+    const start = new Date(startTime);
+
+    return start.getFullYear() === now.getFullYear()
+      && start.getMonth() === now.getMonth()
+      && start.getDate() === now.getDate();
+  }
+
+  private isUpcoming(startTime: string | null | undefined, now: Date) {
+    if (!startTime) {
+      return false;
+    }
+
+    return new Date(startTime).getTime() > now.getTime();
+  }
+
+  private sortByStartTime(left: MatchSummary, right: MatchSummary) {
+    const leftTime = left.startTime ? new Date(left.startTime).getTime() : Number.MAX_SAFE_INTEGER;
+    const rightTime = right.startTime ? new Date(right.startTime).getTime() : Number.MAX_SAFE_INTEGER;
+
+    return leftTime - rightTime;
+  }
+
+  private formatDateTime(value: string | Date) {
+    return new Date(value).toLocaleString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   }
 
   private toTitleCase(value: string): string {

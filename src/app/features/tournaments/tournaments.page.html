@@ -78,6 +78,10 @@
                 <ion-icon name="people-outline"></ion-icon>
               </ion-button>
 
+              <ion-button fill="clear" size="small" color="primary" (click)="goToMatches(t); $event.stopPropagation()">
+                <ion-icon name="calendar-outline"></ion-icon>
+              </ion-button>
+
               <ion-button fill="clear" size="small" (click)="edit(t); $event.stopPropagation()">
                 <ion-icon name="create-outline"></ion-icon>
               </ion-button>

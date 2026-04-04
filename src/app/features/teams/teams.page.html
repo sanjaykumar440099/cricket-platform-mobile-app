@@ -12,6 +12,23 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <section class="teams-next-step glass-panel" *ngIf="!isLoading">
+    <div>
+      <p class="eyebrow">
+        <ion-icon name="calendar-outline"></ion-icon>
+        Match Scheduler
+      </p>
+      <h2 class="app-section-title">Schedule fixtures after squads are ready.</h2>
+      <p class="app-section-copy">
+        Once you have at least two teams, schedule the match date and scorers will be allowed to start the match one hour before kickoff.
+      </p>
+    </div>
+
+    <ion-button (click)="goToScheduler()" [disabled]="teams.length < 2">
+      Open Scheduler
+    </ion-button>
+  </section>
+
   <section *ngIf="isLoading" class="status-panel glass-panel">
     <ion-spinner name="crescent"></ion-spinner>
     <h3>Loading teams</h3>

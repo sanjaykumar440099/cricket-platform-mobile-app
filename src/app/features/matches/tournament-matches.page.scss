@@ -1,0 +1,161 @@
+.scheduler-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.scheduler-hero,
+.panel {
+  padding: 22px;
+  border-radius: 30px;
+}
+
+.scheduler-hero {
+  display: grid;
+  gap: 16px;
+}
+
+.scheduler-hero h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.hero-actions,
+.schedule-grid,
+.form-grid,
+.fixture-meta,
+.match-list {
+  display: grid;
+  gap: 14px;
+}
+
+.panel {
+  background: var(--app-surface);
+  border: 1px solid var(--app-stroke);
+  box-shadow: var(--app-shadow);
+}
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.select-item {
+  --background: rgba(255, 255, 255, 0.52);
+  --border-radius: 20px;
+  border: 1px solid var(--app-stroke);
+  border-radius: 20px;
+}
+
+.native-input-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--app-stroke);
+  background: rgba(255, 255, 255, 0.52);
+  color: var(--app-text);
+  font-weight: 700;
+}
+
+.native-input-card span {
+  font-size: 0.82rem;
+  color: var(--app-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.native-input-card input {
+  border: 0;
+  background: transparent;
+  color: var(--app-text);
+  font: inherit;
+  outline: none;
+}
+
+.rule-card,
+.fixture-card {
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid var(--app-stroke);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.rule-card strong,
+.fixture-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--app-text);
+}
+
+.rule-card p,
+.fixture-subtitle,
+.meta-block span {
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.5;
+}
+
+.fixture-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.status-pill,
+.format-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.status-pill {
+  background: rgba(15, 138, 95, 0.14);
+  color: var(--ion-color-primary);
+}
+
+.format-pill {
+  background: rgba(217, 143, 43, 0.16);
+  color: #9a5b06;
+}
+
+.fixture-subtitle {
+  margin-top: 6px;
+}
+
+.fixture-meta {
+  margin-top: 16px;
+}
+
+.meta-block strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--app-text);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+@media (min-width: 760px) {
+  .scheduler-hero {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+  }
+
+  .hero-actions,
+  .schedule-grid,
+  .form-grid,
+  .fixture-meta,
+  .match-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -3,11 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
 import {
+  BallSubmissionResult,
   CommentaryEntry,
+  CreateBallPayload,
+  CreateInningsPayload,
   DashboardSnapshot,
+  InningsSummary,
   LiveMatchesIndex,
+  MatchCompletionPayload,
   PlayerSummary,
   PublicLiveMatchDetail,
+  MatchSummary,
   SubscriptionPlan,
   SubscriptionSummary,
   TeamSummary,
@@ -103,6 +109,83 @@ export class CricketApiService {
   deletePlayer(playerId: string) {
     return this.http.delete(
       this.apiConfig.url(`admin/players/${playerId}`),
+    );
+  }
+
+  getMatches(): Observable<MatchSummary[]> {
+    return this.http.get<MatchSummary[]>(
+      this.apiConfig.url('matches'),
+    );
+  }
+
+  getMatch(matchId: string): Observable<MatchSummary> {
+    return this.http.get<MatchSummary>(
+      this.apiConfig.url(`matches/${matchId}`),
+    );
+  }
+
+  getTournamentMatches(tournamentId: string): Observable<MatchSummary[]> {
+    return this.getMatches().pipe(
+      map(matches =>
+        matches.filter(match => match.tournamentId === tournamentId),
+      ),
+    );
+  }
+
+  scheduleMatch(payload: {
+    teamAId: string;
+    teamBId: string;
+    oversLimit: number;
+    tournamentId?: string;
+    startTime?: string;
+  }): Observable<MatchSummary> {
+    return this.http.post<MatchSummary>(
+      this.apiConfig.url('matches/schedule'),
+      payload,
+    );
+  }
+
+  startMatch(matchId: string): Observable<MatchSummary> {
+    return this.http.post<MatchSummary>(
+      this.apiConfig.url(`matches/${matchId}/start`),
+      {},
+    );
+  }
+
+  completeMatch(
+    matchId: string,
+    payload: MatchCompletionPayload,
+  ): Observable<MatchSummary> {
+    return this.http.post<MatchSummary>(
+      this.apiConfig.url(`matches/${matchId}/complete`),
+      payload,
+    );
+  }
+
+  getMatchInnings(matchId: string): Observable<InningsSummary[]> {
+    return this.http.get<InningsSummary[]>(
+      this.apiConfig.url(`innings/match/${matchId}`),
+    );
+  }
+
+  createInnings(payload: CreateInningsPayload): Observable<InningsSummary> {
+    return this.http.post<InningsSummary>(
+      this.apiConfig.url('innings'),
+      payload,
+    );
+  }
+
+  endInnings(inningsId: string) {
+    return this.http.post(
+      this.apiConfig.url(`innings/${inningsId}/end`),
+      {},
+    );
+  }
+
+  addBall(payload: CreateBallPayload): Observable<BallSubmissionResult> {
+    return this.http.post<BallSubmissionResult>(
+      this.apiConfig.url('balls'),
+      payload,
     );
   }
 
