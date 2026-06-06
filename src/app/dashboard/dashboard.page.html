@@ -57,6 +57,60 @@
       </article>
     </section>
 
+    <section class="billing-panel glass-panel" *ngIf="!isLoading && plans.length > 0">
+      <div class="section-head billing-head">
+        <div>
+          <h2 class="app-section-title">Monthly Billing</h2>
+          <p class="app-section-copy">
+            Current plan: {{ subscription?.plan ? (subscription?.plan | titlecase) : 'Free' }}
+          </p>
+        </div>
+        <ion-button
+          fill="clear"
+          color="medium"
+          (click)="cancelPlan()"
+          [disabled]="isUpdatingPlan || !subscription || subscription.plan === 'free' || subscription.cancelAtPeriodEnd">
+          Cancel
+        </ion-button>
+      </div>
+
+      <ion-note *ngIf="billingMessage" color="success">{{ billingMessage }}</ion-note>
+      <ion-note *ngIf="billingError" color="danger">{{ billingError }}</ion-note>
+
+      <div class="billing-grid">
+        <article
+          class="billing-card"
+          *ngFor="let plan of plans"
+          [class.current]="isCurrentPlan(plan)"
+          [class.enterprise]="plan.plan === 'enterprise'">
+          <div class="billing-card-top">
+            <div>
+              <h3>{{ plan.name || (plan.plan | titlecase) }}</h3>
+              <p>{{ plan.description }}</p>
+            </div>
+            <span>{{ planLimit(plan) }}</span>
+          </div>
+
+          <strong class="billing-price">{{ planPrice(plan) }}<small>/mo</small></strong>
+
+          <ul>
+            <li *ngFor="let feature of plan.features | slice:0:3">
+              <ion-icon name="checkmark-circle-outline"></ion-icon>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+
+          <ion-button
+            expand="block"
+            [fill]="isCurrentPlan(plan) ? 'outline' : 'solid'"
+            [disabled]="isUpdatingPlan || isCurrentPlan(plan)"
+            (click)="checkoutPlan(plan)">
+            {{ isCurrentPlan(plan) ? 'Current plan' : 'Start monthly' }}
+          </ion-button>
+        </article>
+      </div>
+    </section>
+
     <section class="section-stack">
       <div class="section-head">
         <h2 class="app-section-title">Quick actions</h2>

@@ -13,7 +13,7 @@
   margin: 0 0 10px;
   font-size: clamp(1.8rem, 6vw, 2.6rem);
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
 }
 
 .hero-copy {
@@ -39,7 +39,8 @@
 .stat-card,
 .action-card,
 .schedule-panel,
-.upcoming-panel {
+.upcoming-panel,
+.billing-panel {
   padding: 18px;
   border-radius: 24px;
 }
@@ -62,7 +63,7 @@
   margin: 10px 0 8px;
   font-size: 2rem;
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
   color: var(--app-text);
 }
 
@@ -74,6 +75,100 @@
 .section-stack {
   display: grid;
   gap: 12px;
+}
+
+.billing-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.billing-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.billing-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.billing-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--app-stroke);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.billing-card.current {
+  border-color: rgba(15, 138, 95, 0.4);
+  background: rgba(15, 138, 95, 0.1);
+}
+
+.billing-card.enterprise {
+  border-color: rgba(21, 94, 117, 0.28);
+}
+
+.billing-card-top {
+  display: grid;
+  gap: 10px;
+}
+
+.billing-card h3,
+.billing-card p {
+  margin: 0;
+}
+
+.billing-card h3 {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.billing-card p,
+.billing-card-top span {
+  color: var(--app-muted);
+  line-height: 1.45;
+}
+
+.billing-card-top span {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.billing-price {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--app-text);
+}
+
+.billing-price small {
+  margin-left: 2px;
+  color: var(--app-muted);
+  font-size: 0.86rem;
+}
+
+.billing-card ul {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.billing-card li {
+  display: flex;
+  gap: 8px;
+  color: var(--app-muted);
+  line-height: 1.4;
+}
+
+.billing-card li ion-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--ion-color-primary);
 }
 
 .fixture-list,
@@ -261,5 +356,15 @@
   .schedule-grid {
     grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
     align-items: start;
+  }
+
+  .billing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .billing-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

@@ -1,16 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { catchError, finalize, forkJoin, map, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  forkJoin,
+  map,
+  of,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import { CricketApiService } from '../../../core/api/cricket-api.service';
+import { SocketService } from '../../../core/socket/socket.service';
 import {
   BallExtraType,
+  BallSubmissionResult,
   CommentaryEntry,
   CreateBallPayload,
   CreateInningsPayload,
   InningsSummary,
+  LiveScoreEvent,
   MatchCompletionPayload,
   MatchSummary,
   PlayerSummary,
@@ -58,7 +69,7 @@ interface CommentaryLine {
   templateUrl: './matchdesk.page.html',
   styleUrls: ['./matchdesk.page.scss'],
 })
-export class MatchdeskPage implements OnInit {
+export class MatchdeskPage implements OnInit, OnDestroy {
   readonly runOptions: RunOption[] = [
     { label: '0', value: 0, tone: 'base' },
     { label: '1', value: 1, tone: 'base' },
@@ -129,11 +140,23 @@ export class MatchdeskPage implements OnInit {
   pageError = '';
   deskError = '';
   ballError = '';
+  socketState = 'idle';
 
-  constructor(private readonly api: CricketApiService) {}
+  private readonly socketSubscriptions = new Subscription();
+
+  constructor(
+    private readonly api: CricketApiService,
+    private readonly socket: SocketService,
+  ) {}
 
   ngOnInit() {
+    this.bindSocketListeners();
     this.loadMatches();
+  }
+
+  ngOnDestroy() {
+    this.socketSubscriptions.unsubscribe();
+    this.socket.disconnect();
   }
 
   loadMatches(preferredMatchId?: string) {
@@ -227,6 +250,7 @@ export class MatchdeskPage implements OnInit {
     ).subscribe({
       next: bundle => {
         this.bindDesk(bundle);
+        this.connectLiveSocket();
       },
       error: err => {
         console.error('Failed to load scorer desk', err);
@@ -355,8 +379,8 @@ export class MatchdeskPage implements OnInit {
         this.isSubmittingBall = false;
       }))
       .subscribe({
-        next: () => {
-          this.loadMatchDesk(this.selectedMatch?.id ?? this.selectedMatchId);
+        next: result => {
+          this.applyBallSubmissionResult(payload, result);
         },
         error: err => {
           console.error('Failed to submit ball', err);
@@ -606,13 +630,9 @@ export class MatchdeskPage implements OnInit {
     this.liveDetail = bundle.liveDetail;
     this.teamAPlayers = bundle.teamAPlayers;
     this.teamBPlayers = bundle.teamBPlayers;
-    this.commentaryFeed = bundle.commentary.map(entry => ({
-      over: entry.overNumber !== null && entry.overNumber !== undefined
-        && entry.ballNumber !== null && entry.ballNumber !== undefined
-        ? `${entry.overNumber}.${entry.ballNumber}`
-        : 'Update',
-      text: entry.text,
-    }));
+    this.commentaryFeed = bundle.commentary.map(entry =>
+      this.toCommentaryLine(entry),
+    );
     this.recentBalls = this.buildRecentBalls(bundle.liveDetail);
 
     this.prepareInningsSetup();
@@ -810,6 +830,7 @@ export class MatchdeskPage implements OnInit {
   }
 
   private clearDesk() {
+    this.socket.disconnect();
     this.selectedMatchId = '';
     this.selectedMatch = null;
     this.inningsList = [];
@@ -821,5 +842,152 @@ export class MatchdeskPage implements OnInit {
     this.teamBPlayers = [];
     this.battingPlayers = [];
     this.bowlingPlayers = [];
+  }
+
+  private bindSocketListeners() {
+    this.socketSubscriptions.add(
+      this.socket.scoreUpdates$.subscribe(event => {
+        this.applyLiveEvent(event);
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.socket.resumeState$.subscribe(detail => {
+        if (!this.selectedMatch || detail.matchId !== this.selectedMatch.id) {
+          return;
+        }
+
+        this.liveDetail = {
+          ...this.liveBaseDetail(),
+          ...detail,
+          match: detail.match ?? this.liveBaseDetail().match,
+        };
+        this.recentBalls = this.buildRecentBalls(this.liveDetail);
+        this.prepareLineups();
+        this.prepareBallForm();
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.socket.connectionState$.subscribe(state => {
+        this.socketState = state;
+      }),
+    );
+  }
+
+  private connectLiveSocket() {
+    if (!this.selectedMatch || this.selectedMatch.status !== 'live') {
+      this.socket.disconnect();
+      return;
+    }
+
+    void this.socket.connectToMatch(
+      this.selectedMatch.id,
+      this.liveDetail?.lastEventId ?? undefined,
+    );
+  }
+
+  private applyBallSubmissionResult(
+    payload: CreateBallPayload,
+    result?: BallSubmissionResult,
+  ) {
+    const fallbackEvent: LiveScoreEvent = {
+      eventId: result?.lastEventId ?? Date.now(),
+      matchId: this.selectedMatch?.id ?? this.selectedMatchId,
+      timestamp: Date.now(),
+      score: result?.score ?? null,
+      state: result?.state ?? null,
+      lastBall: result?.lastBall ?? payload,
+      commentary: result?.commentary ?? null,
+      payload: {
+        score: result?.score ?? null,
+        state: result?.state ?? null,
+        lastBall: result?.lastBall ?? payload,
+        commentary: result?.commentary ?? null,
+      },
+    };
+
+    this.applyLiveEvent(result?.event ?? fallbackEvent);
+  }
+
+  private applyLiveEvent(event: LiveScoreEvent) {
+    if (!this.selectedMatch || event.matchId !== this.selectedMatch.id) {
+      return;
+    }
+
+    const commentary = event.commentary ?? event.payload?.commentary ?? null;
+    if (
+      commentary &&
+      !this.commentaryFeed.some(item =>
+        item.over === this.commentaryOver(commentary)
+        && item.text === commentary.text,
+      )
+    ) {
+      this.commentaryFeed = [
+        this.toCommentaryLine(commentary),
+        ...this.commentaryFeed,
+      ].slice(0, 10);
+    }
+
+    const current = this.liveBaseDetail();
+    const recentEvents = [
+      ...(current.recentEvents ?? [])
+        .filter(item => item.eventId !== event.eventId),
+      event,
+    ].slice(-50);
+
+    this.liveDetail = {
+      ...current,
+      score: event.score ?? event.payload?.score ?? current.score,
+      state: event.state ?? event.payload?.state ?? current.state,
+      lastBall:
+        event.lastBall ?? event.payload?.lastBall ?? current.lastBall,
+      commentary: commentary ?? current.commentary,
+      recentEvents,
+      lastEventId: event.eventId ?? current.lastEventId,
+    };
+
+    this.recentBalls = this.buildRecentBalls(this.liveDetail);
+    this.prepareLineups();
+    this.prepareBallForm();
+  }
+
+  private liveBaseDetail(): PublicLiveMatchDetail {
+    return this.liveDetail ?? {
+      matchId: this.selectedMatch?.id ?? this.selectedMatchId,
+      match: this.selectedMatch
+        ? {
+            id: this.selectedMatch.id,
+            tournamentId: this.selectedMatch.tournamentId ?? null,
+            status: this.selectedMatch.status,
+            oversLimit: this.selectedMatch.oversLimit,
+            startTime: this.selectedMatch.startTime ?? null,
+            winnerTeamId: this.selectedMatch.winnerTeamId ?? null,
+            teamA: this.selectedMatch.teamA ?? null,
+            teamB: this.selectedMatch.teamB ?? null,
+            winnerTeam: this.selectedMatch.winnerTeam ?? null,
+          }
+        : null,
+      score: null,
+      state: null,
+      lastBall: null,
+      commentary: null,
+      recentEvents: [],
+      lastEventId: null,
+    };
+  }
+
+  private toCommentaryLine(entry: CommentaryEntry): CommentaryLine {
+    return {
+      over: this.commentaryOver(entry),
+      text: entry.text,
+    };
+  }
+
+  private commentaryOver(entry: CommentaryEntry) {
+    return entry.overNumber !== null && entry.overNumber !== undefined
+      && entry.ballNumber !== null && entry.ballNumber !== undefined
+      ? `${entry.overNumber}.${entry.ballNumber}`
+      : 'Update';
   }
 }

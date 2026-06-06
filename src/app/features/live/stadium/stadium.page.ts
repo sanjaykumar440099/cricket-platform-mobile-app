@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { finalize, forkJoin, of, switchMap } from 'rxjs';
+import { finalize, forkJoin, of, Subscription, switchMap } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CricketApiService } from '../../../core/api/cricket-api.service';
+import { SocketService } from '../../../core/socket/socket.service';
 import {
   CommentaryEntry,
+  LiveScoreEvent,
   PublicLiveMatchDetail,
 } from '../../../shared/models/api.models';
 
@@ -39,7 +41,7 @@ interface CommentaryLine {
   templateUrl: './stadium.page.html',
   styleUrls: ['./stadium.page.scss'],
 })
-export class StadiumPage implements OnInit {
+export class StadiumPage implements OnInit, OnDestroy {
   home: Team = {
     id: 'team-a',
     name: 'Team A',
@@ -64,6 +66,7 @@ export class StadiumPage implements OnInit {
   isLoading = false;
   hasLiveMatch = false;
   errorMessage = '';
+  socketState = 'idle';
 
   summaryStats = [
     { label: 'Run Rate', value: '0.00' },
@@ -81,13 +84,25 @@ export class StadiumPage implements OnInit {
     { label: 'Last ball', value: '-' },
   ];
 
+  private currentDetail: PublicLiveMatchDetail | null = null;
+  private currentSpectators = 0;
+  private currentCommentary: CommentaryEntry[] = [];
+  private readonly socketSubscriptions = new Subscription();
+
   constructor(
     public auth: AuthService,
     private readonly api: CricketApiService,
+    private readonly socket: SocketService,
   ) {}
 
   ngOnInit() {
+    this.bindSocketListeners();
     this.loadLiveFeed();
+  }
+
+  ngOnDestroy() {
+    this.socketSubscriptions.unsubscribe();
+    this.socket.disconnect();
   }
 
   ballClass(kind: string) {
@@ -134,10 +149,12 @@ export class StadiumPage implements OnInit {
             result.spectators.spectators,
             result.commentary,
           );
+          this.connectLiveSocket(result.detail);
         },
         error: err => {
           console.error('Failed to load live feed', err);
           this.applyEmptyState();
+          this.socket.disconnect();
           this.errorMessage = 'Unable to load the live feed from the API right now.';
         },
       });
@@ -148,6 +165,10 @@ export class StadiumPage implements OnInit {
     spectators: number,
     commentaryFeed: CommentaryEntry[],
   ) {
+    this.currentDetail = detail;
+    this.currentSpectators = spectators;
+    this.currentCommentary = commentaryFeed;
+
     const teamAName = detail.match?.teamA?.name ?? 'Team A';
     const teamBName = detail.match?.teamB?.name ?? 'Team B';
     const teamAShort = detail.match?.teamA?.shortName ?? this.toInitials(teamAName);
@@ -305,6 +326,10 @@ export class StadiumPage implements OnInit {
   }
 
   private applyEmptyState() {
+    this.socket.disconnect();
+    this.currentDetail = null;
+    this.currentSpectators = 0;
+    this.currentCommentary = [];
     this.hasLiveMatch = false;
     this.matchId = null;
     this.status = 'Waiting for a live match';
@@ -339,5 +364,110 @@ export class StadiumPage implements OnInit {
 
   private toTitleCase(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+
+  private bindSocketListeners() {
+    this.socketSubscriptions.add(
+      this.socket.scoreUpdates$.subscribe(event => {
+        this.applyLiveEvent(event);
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.socket.resumeState$.subscribe(detail => {
+        this.applyResumeState(detail);
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.socket.spectatorCount$.subscribe(count => {
+        this.currentSpectators = count;
+        if (this.currentDetail) {
+          this.bindLiveFeed(
+            this.currentDetail,
+            this.currentSpectators,
+            this.currentCommentary,
+          );
+        }
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.socket.connectionState$.subscribe(state => {
+        this.socketState = state;
+      }),
+    );
+  }
+
+  private connectLiveSocket(detail: PublicLiveMatchDetail) {
+    if (!this.matchId) {
+      return;
+    }
+
+    void this.socket.connectToMatch(
+      this.matchId,
+      detail.lastEventId ?? undefined,
+    );
+  }
+
+  private applyLiveEvent(event: LiveScoreEvent) {
+    if (!this.currentDetail || event.matchId !== this.matchId) {
+      return;
+    }
+
+    const commentary = event.commentary ?? event.payload?.commentary ?? null;
+
+    if (
+      commentary &&
+      !this.currentCommentary.some(entry => entry.id === commentary.id)
+    ) {
+      this.currentCommentary = [
+        commentary,
+        ...this.currentCommentary,
+      ].slice(0, 10);
+    }
+
+    const recentEvents = [
+      ...(this.currentDetail.recentEvents ?? [])
+        .filter(item => item.eventId !== event.eventId),
+      event,
+    ].slice(-50);
+
+    const detail: PublicLiveMatchDetail = {
+      ...this.currentDetail,
+      score: event.score ?? event.payload?.score ?? this.currentDetail.score,
+      state: event.state ?? event.payload?.state ?? this.currentDetail.state,
+      lastBall:
+        event.lastBall
+        ?? event.payload?.lastBall
+        ?? this.currentDetail.lastBall,
+      commentary: commentary ?? this.currentDetail.commentary,
+      recentEvents,
+      lastEventId: event.eventId ?? this.currentDetail.lastEventId,
+    };
+
+    this.bindLiveFeed(
+      detail,
+      this.currentSpectators,
+      this.currentCommentary,
+    );
+  }
+
+  private applyResumeState(detail: PublicLiveMatchDetail) {
+    if (!this.currentDetail || detail.matchId !== this.matchId) {
+      return;
+    }
+
+    this.bindLiveFeed(
+      {
+        ...this.currentDetail,
+        ...detail,
+        match: detail.match ?? this.currentDetail.match,
+        recentEvents:
+          detail.recentEvents ?? this.currentDetail.recentEvents ?? [],
+      },
+      this.currentSpectators,
+      this.currentCommentary,
+    );
   }
 }

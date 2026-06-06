@@ -1,21 +1,44 @@
 export type MatchStatus = 'scheduled' | 'live' | 'completed';
 export type BallExtraType = 'wide' | 'no-ball' | 'bye' | 'leg-bye' | null;
+export type SubscriptionPlanCode = 'free' | 'basic' | 'premium' | 'enterprise';
 
 export interface SubscriptionPlan {
-  plan: 'free' | 'basic' | 'premium';
+  plan: SubscriptionPlanCode;
+  name?: string;
+  description?: string;
   price: number;
+  currency?: string;
+  interval?: 'month';
   monthlyMatchLimit: number | null;
+  monthlyTournamentLimit?: number | null;
+  highlighted?: boolean;
+  isEnterprise?: boolean;
   features: string[];
 }
 
 export interface SubscriptionSummary {
   id: string;
   userId: string;
-  plan: 'free' | 'basic' | 'premium';
+  plan: SubscriptionPlanCode;
   status: 'active' | 'trialing' | 'canceled' | 'past_due';
   provider: string;
+  billingInterval?: 'month';
+  monthlyPrice?: number;
+  currency?: string;
+  cancelAtPeriodEnd?: boolean;
   currentPeriodStart: string;
   currentPeriodEnd: string | null;
+}
+
+export interface SubscriptionCheckoutResult {
+  subscription: SubscriptionSummary;
+  billing: {
+    provider: string;
+    interval: 'month';
+    amount: number;
+    currency: string;
+    status: string;
+  };
 }
 
 export interface TeamSummary {
@@ -131,6 +154,9 @@ export interface BallSubmissionResult {
   score?: ScoreSummary | null;
   state?: LiveStateSummary | null;
   commentary?: CommentaryEntry | null;
+  lastBall?: LastBallSummary | null;
+  lastEventId?: number | null;
+  event?: LiveScoreEvent;
 }
 
 export interface TournamentSummary {
@@ -160,6 +186,22 @@ export interface CommentaryEntry {
   createdAt: string;
 }
 
+export interface LiveScoreEvent {
+  eventId: number;
+  matchId: string;
+  timestamp: number;
+  score?: ScoreSummary | null;
+  state?: LiveStateSummary | null;
+  lastBall?: LastBallSummary | null;
+  commentary?: CommentaryEntry | null;
+  payload?: {
+    score?: ScoreSummary | null;
+    state?: LiveStateSummary | null;
+    lastBall?: LastBallSummary | null;
+    commentary?: CommentaryEntry | null;
+  };
+}
+
 export interface PublicLiveMatchDetail {
   matchId: string;
   match?: {
@@ -177,14 +219,7 @@ export interface PublicLiveMatchDetail {
   state?: LiveStateSummary | null;
   lastBall?: LastBallSummary | null;
   commentary?: CommentaryEntry | null;
-  recentEvents?: Array<{
-    eventId: number;
-    timestamp: number;
-    payload?: {
-      state?: LiveStateSummary;
-      lastBall?: LastBallSummary;
-    };
-  }>;
+  recentEvents?: LiveScoreEvent[];
   lastEventId?: number | null;
 }
 

@@ -15,6 +15,8 @@ import {
   PublicLiveMatchDetail,
   MatchSummary,
   SubscriptionPlan,
+  SubscriptionPlanCode,
+  SubscriptionCheckoutResult,
   SubscriptionSummary,
   TeamSummary,
   TournamentSummary,
@@ -36,6 +38,22 @@ export class CricketApiService {
   getMySubscription(): Observable<SubscriptionSummary> {
     return this.http.get<SubscriptionSummary>(
       this.apiConfig.url('subscriptions/me'),
+    );
+  }
+
+  checkoutMonthlyPlan(
+    plan: SubscriptionPlanCode,
+  ): Observable<SubscriptionCheckoutResult> {
+    return this.http.post<SubscriptionCheckoutResult>(
+      this.apiConfig.url('subscriptions/checkout/monthly'),
+      { plan },
+    );
+  }
+
+  cancelSubscription(): Observable<SubscriptionSummary> {
+    return this.http.post<SubscriptionSummary>(
+      this.apiConfig.url('subscriptions/cancel'),
+      {},
     );
   }
 

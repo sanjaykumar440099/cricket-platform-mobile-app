@@ -129,10 +129,12 @@
           <div class="plan-top">
             <h3>{{ plan.name }}</h3>
             <div class="price">
-              <span class="currency">$</span>{{ plan.price }}
-              <span class="period">/mo</span>
+              {{ plan.price }}
+              <span class="period">{{ plan.period }}</span>
             </div>
           </div>
+
+          <p class="plan-description">{{ plan.description }}</p>
 
           <ul>
             <li *ngFor="let feature of plan.features">

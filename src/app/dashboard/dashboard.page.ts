@@ -8,6 +8,7 @@ import { CricketApiService } from '../core/api/cricket-api.service';
 import {
   DashboardSnapshot,
   MatchSummary,
+  SubscriptionPlan,
   SubscriptionSummary,
 } from '../shared/models/api.models';
 
@@ -40,8 +41,13 @@ export class DashboardPage implements OnInit, OnDestroy {
   insights: string[] = [];
   todayMatches: DashboardFixture[] = [];
   upcomingMatch: DashboardFixture | null = null;
+  plans: SubscriptionPlan[] = [];
+  subscription: SubscriptionSummary | null = null;
   isLoading = false;
+  isUpdatingPlan = false;
   errorMessage = '';
+  billingMessage = '';
+  billingError = '';
 
   private matches: MatchSummary[] = [];
   private countdownTimerId: ReturnType<typeof setInterval> | null = null;
@@ -99,6 +105,9 @@ export class DashboardPage implements OnInit, OnDestroy {
       subscription: this.api.getMySubscription().pipe(
         catchError(() => of(null)),
       ),
+      plans: this.api.getSubscriptionPlans().pipe(
+        catchError(() => of([])),
+      ),
       matches: this.api.getMatches().pipe(
         catchError(() => of([])),
       ),
@@ -107,7 +116,9 @@ export class DashboardPage implements OnInit, OnDestroy {
         this.isLoading = false;
       }),
     ).subscribe({
-      next: ({ snapshot, subscription, matches }) => {
+      next: ({ snapshot, subscription, plans, matches }) => {
+        this.subscription = subscription;
+        this.plans = plans;
         this.stats = this.buildStats(snapshot, subscription);
         this.insights = this.buildInsights(snapshot, subscription);
         this.matches = matches;
@@ -117,6 +128,8 @@ export class DashboardPage implements OnInit, OnDestroy {
         console.error('Failed to load dashboard', err);
         this.stats = [];
         this.insights = [];
+        this.plans = [];
+        this.subscription = null;
         this.todayMatches = [];
         this.upcomingMatch = null;
         this.errorMessage = 'Dashboard data could not be loaded from the API.';
@@ -128,6 +141,88 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.router.navigate(['/scorer/matchdesk']);
   }
 
+  checkoutPlan(plan: SubscriptionPlan) {
+    if (this.isUpdatingPlan || this.isCurrentPlan(plan)) {
+      return;
+    }
+
+    this.isUpdatingPlan = true;
+    this.billingMessage = '';
+    this.billingError = '';
+
+    this.api.checkoutMonthlyPlan(plan.plan)
+      .pipe(finalize(() => {
+        this.isUpdatingPlan = false;
+      }))
+      .subscribe({
+        next: result => {
+          this.subscription = result.subscription;
+          this.billingMessage =
+            `${plan.name ?? this.toTitleCase(plan.plan)} monthly billing is active.`;
+          this.loadDashboard();
+        },
+        error: err => {
+          console.error('Failed to update subscription', err);
+          this.billingError =
+            err?.error?.message ?? 'Unable to update the monthly plan.';
+        },
+      });
+  }
+
+  cancelPlan() {
+    if (this.isUpdatingPlan || !this.subscription) {
+      return;
+    }
+
+    this.isUpdatingPlan = true;
+    this.billingMessage = '';
+    this.billingError = '';
+
+    this.api.cancelSubscription()
+      .pipe(finalize(() => {
+        this.isUpdatingPlan = false;
+      }))
+      .subscribe({
+        next: subscription => {
+          this.subscription = subscription;
+          this.billingMessage = subscription.cancelAtPeriodEnd
+            ? 'Plan will cancel at the end of the current billing period.'
+            : 'Subscription has been cancelled.';
+          this.loadDashboard();
+        },
+        error: err => {
+          console.error('Failed to cancel subscription', err);
+          this.billingError =
+            err?.error?.message ?? 'Unable to cancel the subscription.';
+        },
+      });
+  }
+
+  isCurrentPlan(plan: SubscriptionPlan) {
+    return this.subscription?.plan === plan.plan
+      && this.subscription?.status === 'active';
+  }
+
+  planPrice(plan: SubscriptionPlan) {
+    if (plan.price === 0) {
+      return 'Free';
+    }
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: plan.currency ?? 'USD',
+      maximumFractionDigits: 0,
+    }).format(plan.price);
+  }
+
+  planLimit(plan: SubscriptionPlan) {
+    if (plan.monthlyMatchLimit === null) {
+      return 'Unlimited matches';
+    }
+
+    return `${plan.monthlyMatchLimit} matches/month`;
+  }
+
   private buildStats(
     snapshot: DashboardSnapshot,
     subscription: SubscriptionSummary | null,
@@ -136,7 +231,9 @@ export class DashboardPage implements OnInit, OnDestroy {
       ? this.toTitleCase(subscription.plan)
       : 'Free';
     const planNote = subscription?.currentPeriodEnd
-      ? `Active until ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
+      ? subscription.cancelAtPeriodEnd
+        ? `Cancels on ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
+        : `Active until ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
       : 'Self-serve free plan';
 
     return [

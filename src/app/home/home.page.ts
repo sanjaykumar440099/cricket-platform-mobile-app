@@ -12,7 +12,9 @@ import {
 interface PlanCard {
   name: string;
   price: string;
+  period: string;
   accent: string;
+  description: string;
   features: string[];
 }
 
@@ -42,7 +44,7 @@ export class HomePage implements OnInit {
   readonly pillars = [
     'AI commentary and live summaries',
     'Fast scorer workflow for mobile operators',
-    'Free, Basic, and Premium match experiences',
+    'Free, paid, and enterprise monthly plans',
   ];
 
   plans: PlanCard[] = [];
@@ -129,9 +131,13 @@ export class HomePage implements OnInit {
 
   private toPlanCard(plan: SubscriptionPlan): PlanCard {
     return {
-      name: this.toTitleCase(plan.plan),
-      price: `${plan.price}`,
+      name: plan.name ?? this.toTitleCase(plan.plan),
+      price: this.formatPlanPrice(plan),
+      period: plan.interval === 'month' ? '/mo' : '',
       accent: this.planAccent(plan.plan),
+      description:
+        plan.description
+        ?? `${plan.monthlyMatchLimit ?? 'Unlimited'} matches per month`,
       features: plan.features,
     };
   }
@@ -183,6 +189,10 @@ export class HomePage implements OnInit {
       return 'gold';
     }
 
+    if (plan === 'enterprise') {
+      return 'enterprise';
+    }
+
     if (plan === 'basic') {
       return 'navy';
     }
@@ -192,5 +202,18 @@ export class HomePage implements OnInit {
 
   private toTitleCase(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+
+  private formatPlanPrice(plan: SubscriptionPlan) {
+    if (plan.price === 0) {
+      return 'Free';
+    }
+
+    const currency = plan.currency ?? 'USD';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(plan.price);
   }
 }

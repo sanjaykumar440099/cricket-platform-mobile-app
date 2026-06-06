@@ -19,7 +19,7 @@
   margin: 0 0 10px;
   font-size: clamp(1.9rem, 5vw, 2.8rem);
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
 }
 
 .hero-copy {
@@ -193,7 +193,7 @@
 .score-kpi strong {
   font-size: clamp(2.4rem, 8vw, 3.8rem);
   line-height: 1;
-  letter-spacing: -0.05em;
+  letter-spacing: 0;
 }
 
 .meta-chip,
