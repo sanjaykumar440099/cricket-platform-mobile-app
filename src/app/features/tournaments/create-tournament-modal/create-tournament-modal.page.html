@@ -11,18 +11,26 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <ion-card>
-    <ion-card-content>
+<ion-content>
+  <div class="modal-shell">
+    <section class="modal-intro">
+      <p class="eyebrow">
+        <ion-icon name="trophy-outline"></ion-icon>
+        Tournament Setup
+      </p>
+      <h2>{{ tournament ? 'Update tournament details' : 'Create a tournament workspace' }}</h2>
+      <p>Choose the format now; teams, players, fixtures, and scoring flow from this record.</p>
+    </section>
 
-      <ion-item>
+    <section class="modal-form-panel">
+      <ion-item class="select-item" lines="none">
         <ion-label position="stacked">Tournament Name</ion-label>
-        <ion-input [(ngModel)]="name"></ion-input>
+        <ion-input [(ngModel)]="name" placeholder="Saturday Premier League"></ion-input>
       </ion-item>
 
-      <ion-item>
+      <ion-item class="select-item" lines="none">
         <ion-label position="stacked">Format</ion-label>
-        <ion-select [(ngModel)]="format">
+        <ion-select interface="popover" [(ngModel)]="format">
           <ion-select-option value="T20">T20</ion-select-option>
           <ion-select-option value="ODI">ODI</ion-select-option>
           <ion-select-option value="TEST">TEST</ion-select-option>
@@ -41,7 +49,6 @@
       <ion-note *ngIf="errorMessage" color="danger" class="inline-error">
         {{ errorMessage }}
       </ion-note>
-
-    </ion-card-content>
-  </ion-card>
+    </section>
+  </div>
 </ion-content>

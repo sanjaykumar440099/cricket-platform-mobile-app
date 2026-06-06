@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { finalize } from 'rxjs';
 import { CricketApiService } from '../../../core/api/cricket-api.service';
 import { TournamentSummary } from '../../../shared/models/api.models';
+import { getApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
   selector: 'app-create-tournament-modal',
@@ -67,8 +68,11 @@ export class CreateTournamentModalPage implements OnInit {
         next: res => {
           this.modalCtrl.dismiss(res);
         },
-        error: () => {
-          this.errorMessage = 'Unable to save the tournament right now.';
+        error: err => {
+          this.errorMessage = getApiErrorMessage(
+            err,
+            'Unable to save the tournament right now.',
+          );
         },
       });
   }
@@ -91,8 +95,11 @@ export class CreateTournamentModalPage implements OnInit {
         next: res => {
           this.modalCtrl.dismiss(res);
         },
-        error: () => {
-          this.errorMessage = 'Unable to update the tournament right now.';
+        error: err => {
+          this.errorMessage = getApiErrorMessage(
+            err,
+            'Unable to update the tournament right now.',
+          );
         },
       });
   }

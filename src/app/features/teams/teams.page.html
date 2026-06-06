@@ -1,77 +1,105 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/tournaments"></ion-back-button>
+    </ion-buttons>
     <ion-title>Teams</ion-title>
-
     <ion-buttons slot="end">
-      <ion-button (click)="openCreateTeamModal()">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Add Team
+      <ion-button fill="clear" (click)="openCreateTeamModal()">
+        <ion-icon name="add-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <section class="teams-next-step glass-panel" *ngIf="!isLoading">
-    <div>
-      <p class="eyebrow">
-        <ion-icon name="calendar-outline"></ion-icon>
-        Match Scheduler
-      </p>
-      <h2 class="app-section-title">Schedule fixtures after squads are ready.</h2>
-      <p class="app-section-copy">
-        Once you have at least two teams, schedule the match date and scorers will be allowed to start the match one hour before kickoff.
-      </p>
-    </div>
+<ion-content [fullscreen]="true">
+  <div class="app-page-shell teams-shell">
+    <section class="teams-hero glass-panel">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="people-outline"></ion-icon>
+          Squad Builder
+        </p>
+        <h1>Build tournament teams before fixtures go live.</h1>
+        <p class="app-section-copy">
+          Add teams, fill squads, then move into scheduling once at least two sides are ready.
+        </p>
+      </div>
 
-    <ion-button (click)="goToScheduler()" [disabled]="teams.length < 2">
-      Open Scheduler
-    </ion-button>
-  </section>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <span>Teams</span>
+          <strong>{{ teams.length }}</strong>
+        </div>
+        <div class="metric-card">
+          <span>Players</span>
+          <strong>{{ totalPlayers() }}</strong>
+        </div>
+      </div>
+    </section>
 
-  <section *ngIf="isLoading" class="status-panel glass-panel">
-    <ion-spinner name="crescent"></ion-spinner>
-    <h3>Loading teams</h3>
-    <p>Fetching the latest squads for this tournament.</p>
-  </section>
+    <section class="teams-next-step glass-panel" *ngIf="!isLoading">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="calendar-outline"></ion-icon>
+          Match Scheduler
+        </p>
+        <h2 class="app-section-title">Schedule fixtures after squads are ready.</h2>
+        <p class="app-section-copy">
+          Scoring opens one hour before kickoff, so operators can prepare lineups without rushing.
+        </p>
+      </div>
 
-  <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
-    <h3>Couldn’t load teams</h3>
-    <p>{{ errorMessage }}</p>
-    <ion-button fill="outline" (click)="loadTeams()">Try again</ion-button>
-  </section>
+      <ion-button (click)="goToScheduler()" [disabled]="teams.length < 2">
+        Open Scheduler
+      </ion-button>
+    </section>
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && !errorMessage && teams.length === 0" class="empty-state">
-    <ion-icon name="people-outline" size="large"></ion-icon>
-    <h3>No teams yet</h3>
-    <p>Add teams for this tournament</p>
-  </div>
+    <section *ngIf="isLoading" class="status-panel glass-panel">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading teams</h3>
+      <p>Fetching the latest squads for this tournament.</p>
+    </section>
 
-  <!-- Teams List -->
-  <ion-list *ngIf="!isLoading && teams.length > 0">
-    <ion-item *ngFor="let team of teams">
+    <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+      <h3>Could not load teams</h3>
+      <p>{{ errorMessage }}</p>
+      <ion-button fill="outline" (click)="loadTeams()">Try again</ion-button>
+    </section>
 
-      <!-- Team Info -->
-      <ion-label>
-        <h2>{{ team.name }}</h2>
-        <p *ngIf="team.shortName">{{ team.shortName }}</p>
-        <p>Players: {{ team.players?.length || 0 }}</p>
-      </ion-label>
+    <section *ngIf="!isLoading && !errorMessage && teams.length === 0" class="empty-state glass-panel">
+      <ion-icon name="people-outline"></ion-icon>
+      <h3>No teams yet</h3>
+      <p>Add your first two teams to unlock fixture scheduling for this tournament.</p>
+      <ion-button (click)="openCreateTeamModal()">Add team</ion-button>
+    </section>
 
-      <!-- Actions -->
-      <ion-buttons slot="end">
-        <!-- Manage Players -->
-        <ion-button
-          fill="clear"
-          color="primary"
-          (click)="goToPlayers(team)"
-        >
+    <section class="team-grid" *ngIf="!isLoading && !errorMessage && teams.length > 0">
+      <article class="team-card glass-panel" *ngFor="let team of teams">
+        <div class="team-top">
+          <div class="team-mark">{{ teamCode(team) }}</div>
+          <div>
+            <h2>{{ team.name }}</h2>
+            <p>{{ team.shortName || 'Tournament squad' }}</p>
+          </div>
+        </div>
+
+        <div class="team-meta">
+          <div>
+            <span>Players</span>
+            <strong>{{ team.players?.length || 0 }}</strong>
+          </div>
+          <div>
+            <span>Status</span>
+            <strong>{{ (team.players?.length || 0) > 0 ? 'Ready' : 'Needs squad' }}</strong>
+          </div>
+        </div>
+
+        <ion-button expand="block" fill="outline" (click)="goToPlayers(team)">
           Manage Players
+          <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
         </ion-button>
-      </ion-buttons>
-
-    </ion-item>
-  </ion-list>
-
+      </article>
+    </section>
+  </div>
 </ion-content>

@@ -1,53 +1,87 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/tournaments"></ion-back-button>
+    </ion-buttons>
     <ion-title>Players</ion-title>
-
     <ion-buttons slot="end">
-      <ion-button (click)="openCreatePlayerModal()">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Add Player
+      <ion-button fill="clear" (click)="openCreatePlayerModal()">
+        <ion-icon name="add-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <section *ngIf="isLoading" class="status-panel glass-panel">
-    <ion-spinner name="crescent"></ion-spinner>
-    <h3>Loading players</h3>
-    <p>Fetching the current squad from the database.</p>
-  </section>
+<ion-content [fullscreen]="true">
+  <div class="app-page-shell players-shell">
+    <section class="players-hero glass-panel">
+      <div>
+        <p class="eyebrow">
+          <ion-icon name="person-add-outline"></ion-icon>
+          Squad Roster
+        </p>
+        <h1>Prepare the playing pool for live scoring.</h1>
+        <p class="app-section-copy">
+          Add batters, bowlers, all-rounders, and keepers so scorers can select real players during each delivery.
+        </p>
+      </div>
 
-  <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
-    <h3>Couldn’t load players</h3>
-    <p>{{ errorMessage }}</p>
-    <ion-button fill="outline" (click)="loadPlayers()">Try again</ion-button>
-  </section>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <span>Players</span>
+          <strong>{{ players.length }}</strong>
+        </div>
+        <div class="metric-card">
+          <span>Roles</span>
+          <strong>{{ roleCount() }}</strong>
+        </div>
+      </div>
+    </section>
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && !errorMessage && players.length === 0" class="empty-state">
-    <ion-icon name="person-outline" size="large"></ion-icon>
-    <h3>No players yet</h3>
-    <p>Add players to this team</p>
+    <section *ngIf="isLoading" class="status-panel glass-panel">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading players</h3>
+      <p>Fetching the current squad from the database.</p>
+    </section>
+
+    <section *ngIf="!isLoading && errorMessage" class="status-panel glass-panel error-panel">
+      <h3>Could not load players</h3>
+      <p>{{ errorMessage }}</p>
+      <ion-button fill="outline" (click)="loadPlayers()">Try again</ion-button>
+    </section>
+
+    <section *ngIf="!isLoading && !errorMessage && players.length === 0" class="empty-state glass-panel">
+      <ion-icon name="person-outline"></ion-icon>
+      <h3>No players yet</h3>
+      <p>Add players before opening the scorer desk for this team.</p>
+      <ion-button (click)="openCreatePlayerModal()">Add player</ion-button>
+    </section>
+
+    <section class="player-grid" *ngIf="!isLoading && !errorMessage && players.length > 0">
+      <article class="player-card glass-panel" *ngFor="let player of players">
+        <div class="player-main">
+          <div class="avatar">{{ initials(player.name) }}</div>
+          <div>
+            <h2>{{ player.name }}</h2>
+            <p>{{ player.role || 'Role not set' }}</p>
+          </div>
+        </div>
+
+        <div class="role-pill">
+          <ion-icon name="shirt-outline"></ion-icon>
+          {{ player.role || 'Squad player' }}
+        </div>
+
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="danger"
+          [disabled]="deletingPlayerId === player.id"
+          (click)="deletePlayer(player.id)">
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          {{ deletingPlayerId === player.id ? 'Removing...' : 'Remove player' }}
+        </ion-button>
+      </article>
+    </section>
   </div>
-
-  <!-- Players List -->
-  <ion-list *ngIf="!isLoading && players.length > 0">
-    <ion-item *ngFor="let player of players">
-      <ion-label>
-        <h2>{{ player.name }}</h2>
-        <p *ngIf="player.role">{{ player.role }}</p>
-      </ion-label>
-
-      <ion-button
-        slot="end"
-        fill="clear"
-        color="danger"
-        [disabled]="deletingPlayerId === player.id"
-        (click)="deletePlayer(player.id)">
-        <ion-icon name="trash-outline"></ion-icon>
-      </ion-button>
-    </ion-item>
-  </ion-list>
-
 </ion-content>

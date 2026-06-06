@@ -8,32 +8,39 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content>
+  <div class="modal-shell">
+    <section class="modal-intro">
+      <p class="eyebrow">
+        <ion-icon name="people-outline"></ion-icon>
+        Team Setup
+      </p>
+      <h2>Add a tournament team</h2>
+      <p>Short names are used in scoreboards and live cards, so keep them crisp.</p>
+    </section>
 
-  <ion-item>
-    <ion-input
-      placeholder="Team Name"
-      [(ngModel)]="name">
-    </ion-input>
-  </ion-item>
+    <section class="modal-form-panel">
+      <ion-item class="select-item" lines="none">
+        <ion-label position="stacked">Team name</ion-label>
+        <ion-input placeholder="Mumbai Strikers" [(ngModel)]="name"></ion-input>
+      </ion-item>
 
-  <ion-item>
-    <ion-input
-      placeholder="Short Name (optional)"
-      [(ngModel)]="shortName">
-    </ion-input>
-  </ion-item>
+      <ion-item class="select-item" lines="none">
+        <ion-label position="stacked">Short name</ion-label>
+        <ion-input placeholder="MS" maxlength="6" [(ngModel)]="shortName"></ion-input>
+      </ion-item>
 
-  <ion-button
-    expand="block"
-    class="ion-margin-top"
-    (click)="create()"
-    [disabled]="!name.trim() || isSaving">
-    {{ isSaving ? 'Creating...' : 'Create Team' }}
-  </ion-button>
+      <ion-button
+        expand="block"
+        class="ion-margin-top"
+        (click)="create()"
+        [disabled]="!name.trim() || isSaving">
+        {{ isSaving ? 'Creating...' : 'Create Team' }}
+      </ion-button>
 
-  <ion-note *ngIf="errorMessage" color="danger" class="inline-error">
-    {{ errorMessage }}
-  </ion-note>
-
+      <ion-note *ngIf="errorMessage" color="danger" class="inline-error">
+        {{ errorMessage }}
+      </ion-note>
+    </section>
+  </div>
 </ion-content>

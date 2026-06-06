@@ -1,0 +1,134 @@
+.players-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.players-hero,
+.empty-state,
+.player-card {
+  padding: 22px;
+  border-radius: 30px;
+}
+
+.players-hero,
+.hero-metrics,
+.player-grid,
+.player-card {
+  display: grid;
+  gap: 14px;
+}
+
+.players-hero h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 5vw, 2.35rem);
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.metric-card {
+  padding: 16px;
+  border: 1px solid var(--app-stroke);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.metric-card span,
+.metric-card strong {
+  display: block;
+}
+
+.metric-card span {
+  color: var(--app-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.metric-card strong {
+  margin-top: 8px;
+  color: var(--app-text);
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.player-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: var(--app-gold-gradient);
+  color: #25170a;
+  font-weight: 900;
+}
+
+.player-card h2 {
+  margin: 0 0 6px;
+  color: var(--app-text);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.player-card p,
+.empty-state p {
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.5;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  padding: 9px 12px;
+  border: 1px solid var(--app-stroke);
+  border-radius: 999px;
+  color: var(--app-text);
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.empty-state {
+  text-align: center;
+}
+
+.empty-state ion-icon {
+  font-size: 3.2rem;
+  color: var(--ion-color-tertiary);
+}
+
+.empty-state h3 {
+  margin: 12px 0 8px;
+  color: var(--app-text);
+  font-weight: 900;
+}
+
+@media (min-width: 760px) {
+  .players-hero {
+    grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+    align-items: center;
+  }
+
+  .hero-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .player-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1120px) {
+  .player-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -28,6 +28,7 @@ import {
   PublicLiveMatchDetail,
   TeamSummary,
 } from '../../../shared/models/api.models';
+import { getApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 type ExtraSelection = BallExtraType | 'none';
 
@@ -254,7 +255,10 @@ export class MatchdeskPage implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Failed to load scorer desk', err);
-        this.deskError = 'Unable to load this match desk right now.';
+        this.deskError = getApiErrorMessage(
+          err,
+          'Unable to load this match desk right now.',
+        );
       },
     });
   }
@@ -276,7 +280,10 @@ export class MatchdeskPage implements OnInit, OnDestroy {
         },
         error: err => {
           console.error('Failed to start match', err);
-          this.deskError = err?.error?.message ?? 'Unable to start the selected match.';
+          this.deskError = getApiErrorMessage(
+            err,
+            'Unable to start the selected match.',
+          );
         },
       });
   }
@@ -312,7 +319,10 @@ export class MatchdeskPage implements OnInit, OnDestroy {
         },
         error: err => {
           console.error('Failed to create innings', err);
-          this.deskError = 'Unable to create the innings with the selected teams.';
+          this.deskError = getApiErrorMessage(
+            err,
+            'Unable to create the innings with the selected teams.',
+          );
         },
       });
   }
@@ -334,7 +344,10 @@ export class MatchdeskPage implements OnInit, OnDestroy {
         },
         error: err => {
           console.error('Failed to end innings', err);
-          this.deskError = 'Unable to close the current innings.';
+          this.deskError = getApiErrorMessage(
+            err,
+            'Unable to close the current innings.',
+          );
         },
       });
   }
@@ -384,7 +397,10 @@ export class MatchdeskPage implements OnInit, OnDestroy {
         },
         error: err => {
           console.error('Failed to submit ball', err);
-          this.ballError = err?.error?.message ?? 'Unable to score this delivery.';
+          this.ballError = getApiErrorMessage(
+            err,
+            'Unable to score this delivery.',
+          );
         },
       });
   }
@@ -414,7 +430,10 @@ export class MatchdeskPage implements OnInit, OnDestroy {
         },
         error: err => {
           console.error('Failed to complete match', err);
-          this.deskError = 'Unable to complete the selected match.';
+          this.deskError = getApiErrorMessage(
+            err,
+            'Unable to complete the selected match.',
+          );
         },
       });
   }

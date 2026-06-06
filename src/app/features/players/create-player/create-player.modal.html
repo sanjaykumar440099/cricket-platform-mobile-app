@@ -8,32 +8,44 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content>
+  <div class="modal-shell">
+    <section class="modal-intro">
+      <p class="eyebrow">
+        <ion-icon name="person-add-outline"></ion-icon>
+        Player Setup
+      </p>
+      <h2>Add a squad member</h2>
+      <p>Roles help scorers quickly choose batters, bowlers, and wicketkeepers during live entry.</p>
+    </section>
 
-  <ion-item>
-    <ion-input
-      placeholder="Player Name"
-      [(ngModel)]="name">
-    </ion-input>
-  </ion-item>
+    <section class="modal-form-panel">
+      <ion-item class="select-item" lines="none">
+        <ion-label position="stacked">Player name</ion-label>
+        <ion-input placeholder="Ravi Kumar" [(ngModel)]="name"></ion-input>
+      </ion-item>
 
-  <ion-item>
-    <ion-input
-      placeholder="Role (Batsman / Bowler / All-rounder)"
-      [(ngModel)]="role">
-    </ion-input>
-  </ion-item>
+      <ion-item class="select-item" lines="none">
+        <ion-label position="stacked">Role</ion-label>
+        <ion-select interface="popover" [(ngModel)]="role">
+          <ion-select-option value="Batter">Batter</ion-select-option>
+          <ion-select-option value="Bowler">Bowler</ion-select-option>
+          <ion-select-option value="All-rounder">All-rounder</ion-select-option>
+          <ion-select-option value="Wicketkeeper">Wicketkeeper</ion-select-option>
+        </ion-select>
+      </ion-item>
 
-  <ion-button
-    expand="block"
-    class="ion-margin-top"
-    (click)="create()"
-    [disabled]="!name.trim() || isSaving">
-    {{ isSaving ? 'Adding...' : 'Add Player' }}
-  </ion-button>
+      <ion-button
+        expand="block"
+        class="ion-margin-top"
+        (click)="create()"
+        [disabled]="!name.trim() || isSaving">
+        {{ isSaving ? 'Adding...' : 'Add Player' }}
+      </ion-button>
 
-  <ion-note *ngIf="errorMessage" color="danger" class="inline-error">
-    {{ errorMessage }}
-  </ion-note>
-
+      <ion-note *ngIf="errorMessage" color="danger" class="inline-error">
+        {{ errorMessage }}
+      </ion-note>
+    </section>
+  </div>
 </ion-content>

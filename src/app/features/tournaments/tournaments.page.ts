@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CricketApiService } from '../../core/api/cricket-api.service';
 import { TournamentSummary } from '../../shared/models/api.models';
+import { getApiErrorMessage } from '../../shared/utils/api-error.util';
 import { CreateTournamentModalPage } from './create-tournament-modal/create-tournament-modal.page';
 
 @Component({
@@ -47,7 +48,10 @@ export class TournamentsPage implements OnInit {
         },
         error: err => {
           console.error('Failed to load tournaments', err);
-          this.errorMessage = 'Unable to load tournaments from the API right now.';
+          this.errorMessage = getApiErrorMessage(
+            err,
+            'Unable to load tournaments from the API right now.',
+          );
         }
     });
   }
@@ -123,7 +127,13 @@ export class TournamentsPage implements OnInit {
         this.tournaments = this.tournaments.filter(t => t.id !== id);
         this.load();
       },
-      error: err => console.error('Delete failed', err)
+      error: err => {
+        console.error('Delete failed', err);
+        this.errorMessage = getApiErrorMessage(
+          err,
+          'Unable to delete the tournament right now.',
+        );
+      },
     });
   }
 

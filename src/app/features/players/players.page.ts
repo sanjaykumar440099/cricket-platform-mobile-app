@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CricketApiService } from '../../core/api/cricket-api.service';
 import { PlayerSummary } from '../../shared/models/api.models';
+import { getApiErrorMessage } from '../../shared/utils/api-error.util';
 
 @Component({
   selector: 'app-players',
@@ -47,7 +48,10 @@ export class PlayersPage implements OnInit {
         },
         error: err => {
           console.error('Failed to load players', err);
-          this.errorMessage = 'Unable to load players for this team right now.';
+          this.errorMessage = getApiErrorMessage(
+            err,
+            'Unable to load players for this team right now.',
+          );
         },
       });
   }
@@ -82,9 +86,29 @@ export class PlayersPage implements OnInit {
         },
         error: err => {
           console.error('Delete failed', err);
-          this.errorMessage = 'Unable to delete the player right now.';
+          this.errorMessage = getApiErrorMessage(
+            err,
+            'Unable to delete the player right now.',
+          );
         },
       });
+  }
+
+  initials(name: string) {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join('');
+  }
+
+  roleCount() {
+    return new Set(
+      this.players
+        .map(player => player.role?.trim())
+        .filter(Boolean),
+    ).size;
   }
 
 }

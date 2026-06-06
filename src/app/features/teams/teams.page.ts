@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CricketApiService } from '../../core/api/cricket-api.service';
 import { TeamSummary } from '../../shared/models/api.models';
+import { getApiErrorMessage } from '../../shared/utils/api-error.util';
 import { CreateTeamModalComponent } from './create-teams/create-team.modal';
 @Component({
   selector: 'app-teams',
@@ -46,7 +47,10 @@ export class TeamsPage implements OnInit {
         },
         error: err => {
           console.error('Failed to load teams', err);
-          this.errorMessage = 'Unable to load teams for this tournament right now.';
+          this.errorMessage = getApiErrorMessage(
+            err,
+            'Unable to load teams for this tournament right now.',
+          );
         },
       });
   }
@@ -82,6 +86,26 @@ export class TeamsPage implements OnInit {
       this.tournamentId,
       'matches',
     ]);
+  }
+
+  totalPlayers() {
+    return this.teams.reduce(
+      (sum, team) => sum + (team.players?.length ?? 0),
+      0,
+    );
+  }
+
+  teamCode(team: TeamSummary) {
+    if (team.shortName) {
+      return team.shortName;
+    }
+
+    return team.name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join('');
   }
 
 }

@@ -4,6 +4,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CricketApiService } from '../../../core/api/cricket-api.service';
+import { getApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
     standalone: true,
@@ -43,8 +44,11 @@ export class CreateTeamModalComponent {
             next: res => {
                 this.modalCtrl.dismiss(res);
             },
-            error: () => {
-                this.errorMessage = 'Unable to create the team right now.';
+            error: err => {
+                this.errorMessage = getApiErrorMessage(
+                    err,
+                    'Unable to create the team right now.',
+                );
             },
         });
     }

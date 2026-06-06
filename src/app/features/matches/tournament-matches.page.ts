@@ -10,6 +10,7 @@ import {
   TeamSummary,
   TournamentSummary,
 } from '../../shared/models/api.models';
+import { getApiErrorMessage } from '../../shared/utils/api-error.util';
 
 @Component({
   selector: 'app-tournament-matches',
@@ -74,7 +75,10 @@ export class TournamentMatchesPage implements OnInit {
       },
       error: err => {
         console.error('Failed to load scheduler', err);
-        this.errorMessage = 'Unable to load teams and matches for this tournament.';
+        this.errorMessage = getApiErrorMessage(
+          err,
+          'Unable to load teams and matches for this tournament.',
+        );
       },
     });
   }
@@ -103,7 +107,10 @@ export class TournamentMatchesPage implements OnInit {
       },
       error: err => {
         console.error('Failed to schedule match', err);
-        this.saveError = err?.error?.message ?? 'Unable to schedule the match right now.';
+        this.saveError = getApiErrorMessage(
+          err,
+          'Unable to schedule the match right now.',
+        );
       },
     });
   }

@@ -194,3 +194,44 @@ ion-input {
 .dark .info-pill {
   background: rgba(255, 255, 255, 0.06);
 }
+
+.modal-shell {
+  display: grid;
+  gap: 18px;
+  padding: 20px 18px 28px;
+}
+
+.modal-intro,
+.modal-form-panel {
+  padding: 20px;
+  border-radius: 26px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-stroke);
+  box-shadow: var(--app-shadow);
+}
+
+.modal-intro h2 {
+  margin: 0 0 8px;
+  color: var(--app-text);
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.modal-intro p {
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.55;
+}
+
+.modal-form-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.select-item {
+  --background: rgba(255, 255, 255, 0.52);
+  --border-radius: 20px;
+  border: 1px solid var(--app-stroke);
+  border-radius: 20px;
+}

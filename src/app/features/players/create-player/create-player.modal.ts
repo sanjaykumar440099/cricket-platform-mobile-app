@@ -4,6 +4,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CricketApiService } from '../../../core/api/cricket-api.service';
+import { getApiErrorMessage } from '../../../shared/utils/api-error.util';
 
 @Component({
   standalone: true,
@@ -42,8 +43,11 @@ export class CreatePlayerModalComponent {
       next: res => {
         this.modalCtrl.dismiss(res);
       },
-      error: () => {
-        this.errorMessage = 'Unable to add the player right now.';
+      error: err => {
+        this.errorMessage = getApiErrorMessage(
+          err,
+          'Unable to add the player right now.',
+        );
       },
     });
   }
