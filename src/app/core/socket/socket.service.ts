@@ -45,6 +45,14 @@ export class SocketService {
     lastEventId?: number | null,
   ): Promise<void> {
     if (this.socket && this.activeMatchId === matchId) {
+      if (!this.socket.connected) {
+        this.emitConnectionState('connecting');
+        this.socket.io.opts.query = {
+          matchId,
+          ...(lastEventId ? { lastEventId: `${lastEventId}` } : {}),
+        };
+        this.socket.connect();
+      }
       return;
     }
 

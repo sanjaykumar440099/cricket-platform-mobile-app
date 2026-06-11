@@ -43,9 +43,9 @@
             <h1>{{ status }}</h1>
             <p class="venue">{{ venue }}</p>
           </div>
-          <span class="live-pill">
+          <span class="live-pill" [ngClass]="'socket-' + socketState">
             <span class="live-dot"></span>
-            Broadcasting
+            {{ socketLabel() }}
           </span>
         </div>
 

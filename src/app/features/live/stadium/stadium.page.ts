@@ -4,7 +4,10 @@ import { IonicModule } from '@ionic/angular';
 import { finalize, forkJoin, of, Subscription, switchMap } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CricketApiService } from '../../../core/api/cricket-api.service';
-import { SocketService } from '../../../core/socket/socket.service';
+import {
+  SocketConnectionState,
+  SocketService,
+} from '../../../core/socket/socket.service';
 import {
   CommentaryEntry,
   LiveScoreEvent,
@@ -66,7 +69,7 @@ export class StadiumPage implements OnInit, OnDestroy {
   isLoading = false;
   hasLiveMatch = false;
   errorMessage = '';
-  socketState = 'idle';
+  socketState: SocketConnectionState = 'idle';
 
   summaryStats = [
     { label: 'Run Rate', value: '0.00' },
@@ -88,6 +91,8 @@ export class StadiumPage implements OnInit, OnDestroy {
   private currentSpectators = 0;
   private currentCommentary: CommentaryEntry[] = [];
   private readonly socketSubscriptions = new Subscription();
+  private fallbackTimerId: ReturnType<typeof setInterval> | null = null;
+  private isFallbackSyncing = false;
 
   constructor(
     public auth: AuthService,
@@ -102,6 +107,7 @@ export class StadiumPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.socketSubscriptions.unsubscribe();
+    this.stopFallbackResync();
     this.socket.disconnect();
   }
 
@@ -111,6 +117,25 @@ export class StadiumPage implements OnInit, OnDestroy {
 
   reload() {
     this.loadLiveFeed();
+  }
+
+  socketLabel() {
+    if (this.socketState === 'connected') {
+      return 'Live socket';
+    }
+
+    if (this.socketState === 'connecting') {
+      return 'Connecting';
+    }
+
+    if (
+      this.socketState === 'disconnected'
+      || this.socketState === 'error'
+    ) {
+      return 'Resyncing';
+    }
+
+    return 'Standby';
   }
 
   private loadLiveFeed() {
@@ -327,6 +352,7 @@ export class StadiumPage implements OnInit, OnDestroy {
 
   private applyEmptyState() {
     this.socket.disconnect();
+    this.stopFallbackResync();
     this.currentDetail = null;
     this.currentSpectators = 0;
     this.currentCommentary = [];
@@ -395,6 +421,18 @@ export class StadiumPage implements OnInit, OnDestroy {
     this.socketSubscriptions.add(
       this.socket.connectionState$.subscribe(state => {
         this.socketState = state;
+        if (state === 'connected') {
+          this.stopFallbackResync();
+          return;
+        }
+
+        if (
+          state === 'connecting'
+          || state === 'disconnected'
+          || state === 'error'
+        ) {
+          this.startFallbackResync();
+        }
       }),
     );
   }
@@ -408,6 +446,55 @@ export class StadiumPage implements OnInit, OnDestroy {
       this.matchId,
       detail.lastEventId ?? undefined,
     );
+  }
+
+  private startFallbackResync() {
+    if (!this.matchId || this.fallbackTimerId) {
+      return;
+    }
+
+    this.fallbackTimerId = setInterval(() => {
+      this.refreshCurrentLiveMatch();
+    }, 5000);
+  }
+
+  private stopFallbackResync() {
+    if (!this.fallbackTimerId) {
+      return;
+    }
+
+    clearInterval(this.fallbackTimerId);
+    this.fallbackTimerId = null;
+  }
+
+  private refreshCurrentLiveMatch() {
+    if (!this.matchId || this.isFallbackSyncing) {
+      return;
+    }
+
+    this.isFallbackSyncing = true;
+
+    forkJoin({
+      detail: this.api.getLiveMatch(this.matchId),
+      spectators: this.api.getLiveSpectators(this.matchId),
+      commentary: this.api.getCommentary(this.matchId, 10),
+    }).pipe(
+      finalize(() => {
+        this.isFallbackSyncing = false;
+      }),
+    ).subscribe({
+      next: result => {
+        this.bindLiveFeed(
+          result.detail,
+          result.spectators.spectators,
+          result.commentary,
+        );
+        this.connectLiveSocket(result.detail);
+      },
+      error: err => {
+        console.error('Failed to resync live feed', err);
+      },
+    });
   }
 
   private applyLiveEvent(event: LiveScoreEvent) {

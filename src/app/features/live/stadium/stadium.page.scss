@@ -64,6 +64,8 @@
   background: rgba(255, 255, 255, 0.08);
   color: #f3f8ff;
   font-weight: 700;
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
 }
 
 .live-dot {
@@ -72,6 +74,39 @@
   border-radius: 50%;
   background: #ef6b52;
   box-shadow: 0 0 0 6px rgba(239, 107, 82, 0.15);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.socket-connected {
+  background: rgba(69, 192, 145, 0.16);
+  color: #d9ffef;
+}
+
+.socket-connected .live-dot {
+  background: #45c091;
+  box-shadow: 0 0 0 6px rgba(69, 192, 145, 0.18);
+}
+
+.socket-connecting {
+  background: rgba(247, 201, 109, 0.16);
+  color: #ffe2a3;
+}
+
+.socket-connecting .live-dot {
+  background: #f7c96d;
+  box-shadow: 0 0 0 6px rgba(247, 201, 109, 0.18);
+}
+
+.socket-disconnected,
+.socket-error {
+  background: rgba(239, 107, 82, 0.16);
+  color: #ffd1c8;
+}
+
+.socket-disconnected .live-dot,
+.socket-error .live-dot {
+  background: #ef6b52;
+  box-shadow: 0 0 0 6px rgba(239, 107, 82, 0.18);
 }
 
 .score-stack,
